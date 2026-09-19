@@ -3,6 +3,10 @@ import { useClinic } from '../../context/ClinicContext';
 import { ClinicalSystemKey } from '../../types';
 import { CLINICAL_SYSTEMS_METADATA } from '../../data/mockData';
 import { SkinHairCaseForm } from '../forms/SkinHairCaseForm';
+import { NeuroCaseForm } from '../forms/NeuroCaseForm';
+import { GastroCaseForm } from '../forms/GastroCaseForm';
+import { UrinaryCaseForm } from '../forms/UrinaryCaseForm';
+import { MusculoskeletalCaseForm } from '../forms/MusculoskeletalCaseForm';
 import {
   ClipboardList,
   Save,
@@ -237,6 +241,14 @@ export const CaseTakingView: React.FC = () => {
       {/* Main Form Content */}
       {activeSystemFormKey === 'skin_hair' ? (
         <SkinHairCaseForm />
+      ) : activeSystemFormKey === 'headache' ? (
+        <NeuroCaseForm />
+      ) : activeSystemFormKey === 'gastrointestinal' ? (
+        <GastroCaseForm />
+      ) : activeSystemFormKey === 'urinary' ? (
+        <UrinaryCaseForm />
+      ) : activeSystemFormKey === 'musculoskeletal' ? (
+        <MusculoskeletalCaseForm />
       ) : (
         <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6 text-xs">
         {/* Active System Header & Status */}

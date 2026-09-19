@@ -1243,46 +1243,60 @@ export const MusculoskeletalCaseForm: React.FC = () => {
         </div>
       </div>
 
-      {/* Sticky Bottom Actions Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3 px-4 shadow-lg">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="text-xs text-slate-600 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Musculoskeletal Case Mode &nbsp;|&nbsp; Patient: <strong>{formData.patientName || 'None'}</strong></span>
-            {statusMessage && (
-              <span className={`font-bold ml-2 ${statusType === 'error' ? 'text-rose-600' : 'text-emerald-700'}`}>
-                {statusMessage}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleClear}
-              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Clear</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-xs transition-colors"
-            >
-              <Save className="w-3.5 h-3.5" />
-              <span>Save</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleSubmit}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Submit & Print</span>
-            </button>
-          </div>
+      {/* Live Status Toast / Feedback */}
+      {statusMessage && (
+        <div
+          id="status"
+          className={`p-3 rounded-xl text-center text-xs font-bold border transition-all ${
+            statusType === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+              : statusType === 'error'
+              ? 'bg-rose-50 text-rose-800 border-rose-300'
+              : 'bg-emerald-50 text-emerald-800 border-emerald-300'
+          }`}
+        >
+          {statusMessage}
         </div>
+      )}
+
+      {/* Footer Branding */}
+      <footer className="text-center py-4 bg-emerald-950 text-white rounded-2xl text-xs space-y-1">
+        <div>
+          <strong>Dr. Bharat's Arogya Homeopathy</strong> &nbsp;|&nbsp; Opp. Central Jail, Hindalga, Belgaum &nbsp;|&nbsp; 9902686173
+        </div>
+        <div className="text-[10px] text-emerald-300 opacity-80">
+          Design by <strong>Ananya Infotech</strong>
+        </div>
+      </footer>
+
+      {/* Sticky Bottom Actions Bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 py-3 px-4 shadow-lg flex items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-xs transition-transform active:scale-95 flex items-center gap-2"
+        >
+          <Save className="w-4 h-4" />
+          <span>💾 Save Case / सेव्ह करा</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          className="px-6 py-2.5 bg-sky-700 hover:bg-sky-800 text-white font-bold text-xs rounded-xl shadow-xs transition-transform active:scale-95 flex items-center gap-2"
+        >
+          <CheckCircle2 className="w-4 h-4" />
+          <span>✓ Submit & Print / सबमिट करा</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleClear}
+          className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl shadow-xs transition-transform active:scale-95 flex items-center gap-2"
+        >
+          <RotateCcw className="w-4 h-4" />
+          <span>✕ Clear / क्लिअर</span>
+        </button>
       </div>
     </div>
   );

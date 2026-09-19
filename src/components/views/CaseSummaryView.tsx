@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import { useClinic } from '../../context/ClinicContext';
 import { CLINIC_CONFIG } from '../../config/clinicConfig';
 import { SkinHairSummaryCard } from './SkinHairSummaryCard';
+import { NeuroSummaryCard } from './NeuroSummaryCard';
+import { GastroSummaryCard } from './GastroSummaryCard';
+import { UrinarySummaryCard } from './UrinarySummaryCard';
+import { MusculoskeletalSummaryCard } from './MusculoskeletalSummaryCard';
 import {
   FileCheck2,
   GitBranch,
@@ -241,6 +245,46 @@ export const CaseSummaryView: React.FC = () => {
                 if (rec.system === 'skin_hair') {
                   return (
                     <SkinHairSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'headache') {
+                  return (
+                    <NeuroSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'gastrointestinal') {
+                  return (
+                    <GastroSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'urinary') {
+                  return (
+                    <UrinarySummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'musculoskeletal') {
+                  return (
+                    <MusculoskeletalSummaryCard
                       key={rec.id}
                       record={rec}
                       patient={selectedPatient}
