@@ -71,9 +71,9 @@ export const Sidebar: React.FC<SidebarProps> = () => {
   ];
 
   return (
-    <aside id="app-sidebar" className="w-64 bg-slate-900 text-slate-300 border-r border-slate-800 flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
-      <div className="p-3 space-y-1 flex-1 overflow-y-auto">
-        <div className="px-3 py-1 text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+    <aside id="app-sidebar" className="w-72 bg-slate-900 text-slate-200 border-r border-slate-800 flex flex-col shrink-0 min-h-[calc(100vh-4rem)]">
+      <div className="p-3.5 space-y-1.5 flex-1 overflow-y-auto">
+        <div className="px-3.5 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
           Clinical Navigation
         </div>
 
@@ -85,18 +85,18 @@ export const Sidebar: React.FC<SidebarProps> = () => {
               <button
                 id={`sidebar-tab-${item.id}`}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all ${
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                   isActive
-                    ? 'bg-teal-600 text-white shadow-sm font-semibold'
+                    ? 'bg-teal-600 text-white shadow-md font-bold'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
-                  <span>{item.label}</span>
+                <div className="flex items-center gap-3">
+                  <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                  <span className="tracking-tight">{item.label}</span>
                 </div>
                 {item.badge !== undefined && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500 text-slate-950">
+                  <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-500 text-slate-950">
                     {item.badge}
                   </span>
                 )}
@@ -104,8 +104,8 @@ export const Sidebar: React.FC<SidebarProps> = () => {
 
               {/* Nested Sub-menu for Case Taking if selected */}
               {item.id === 'case_taking' && activeTab === 'case_taking' && (
-                <div className="mt-1 ml-4 pl-2 border-l border-slate-700/80 space-y-0.5 py-1">
-                  <div className="px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                <div className="mt-1.5 ml-5 pl-2.5 border-l-2 border-slate-700/80 space-y-1 py-1">
+                  <div className="px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-slate-400">
                     9 Clinical Systems
                   </div>
                   {clinicalSystems.map((sys) => {
@@ -119,17 +119,17 @@ export const Sidebar: React.FC<SidebarProps> = () => {
                           setActiveTab('case_taking');
                           setActiveSystemFormKey(sys.key);
                         }}
-                        className={`w-full flex items-center justify-between px-2 py-1.5 rounded-md text-[11px] transition-colors ${
+                        className={`w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium transition-colors ${
                           isSysActive
-                            ? 'bg-teal-900/60 text-teal-300 font-semibold border border-teal-700/60'
-                            : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                            ? 'bg-teal-900/70 text-teal-300 font-bold border border-teal-600/70'
+                            : 'text-slate-300 hover:text-white hover:bg-slate-800/70'
                         }`}
                       >
-                        <div className="flex items-center gap-2 truncate">
-                          <SysIcon className="w-3 h-3 shrink-0" />
+                        <div className="flex items-center gap-2.5 truncate">
+                          <SysIcon className="w-3.5 h-3.5 shrink-0" />
                           <span className="truncate">{sys.label}</span>
                         </div>
-                        {isSysActive && <ChevronRight className="w-3 h-3 text-teal-400 shrink-0" />}
+                        {isSysActive && <ChevronRight className="w-3.5 h-3.5 text-teal-400 shrink-0" />}
                       </button>
                     );
                   })}
@@ -141,12 +141,12 @@ export const Sidebar: React.FC<SidebarProps> = () => {
       </div>
 
       {/* Clinic & Firestore Cloud Footer */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/60 text-[11px]">
-        <div className="flex items-center gap-1.5 text-emerald-400 font-medium mb-1">
-          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+      <div className="p-3.5 border-t border-slate-800 bg-slate-950/70 text-xs">
+        <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
           <span>Firestore Connected: ananyainfotech</span>
         </div>
-        <p className="text-slate-400 text-[10px] leading-relaxed">
+        <p className="text-slate-400 text-xs leading-relaxed">
           Dr. Bharat Chougule • Belgaum 591108
         </p>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useClinic } from '../../context/ClinicContext';
 import { CLINIC_CONFIG } from '../../config/clinicConfig';
 import { HomeoMedicine, AlloMedicine, Prescription } from '../../types';
@@ -17,7 +17,9 @@ import {
   Droplet,
   Weight,
   Sparkles,
-  QrCode
+  QrCode,
+  ZoomIn,
+  MessageCircle
 } from 'lucide-react';
 
 export const PrescriptionView: React.FC = () => {
@@ -43,6 +45,29 @@ export const PrescriptionView: React.FC = () => {
   const [followUpDate, setFollowUpDate] = useState(
     existingRx?.followUpDate || '2026-03-30'
   );
+
+  // Encounter Vitals: Keep only BP and Sugar for the prescription
+  const [bpValue, setBpValue] = useState(
+    selectedPatient
+      ? `${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`
+      : '120/80 mmHg'
+  );
+  const [sugarValue, setSugarValue] = useState(
+    selectedPatient
+      ? `${selectedPatient.vitals.rbs} mg/dL`
+      : '110 mg/dL'
+  );
+
+  // Letterhead Font Size scale mode (defaulting to 'large' as requested by user)
+  const [fontScale, setFontScale] = useState<'large' | 'xl' | 'standard'>('large');
+
+  // Sync vitals when patient changes
+  useEffect(() => {
+    if (selectedPatient) {
+      setBpValue(`${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`);
+      setSugarValue(`${selectedPatient.vitals.rbs} mg/dL`);
+    }
+  }, [selectedPatient?.id]);
 
   // Homeopathic Medicines State
   const [homeoMedicines, setHomeoMedicines] = useState<HomeoMedicine[]>(
@@ -70,7 +95,7 @@ export const PrescriptionView: React.FC = () => {
     ]
   );
 
-  // Allopathic Medicines State
+  // Supportive / Additional Medicines State
   const [alloMedicines, setAlloMedicines] = useState<AlloMedicine[]>(
     existingRx?.alloMedicines || [
       {
@@ -117,7 +142,7 @@ export const PrescriptionView: React.FC = () => {
     setHomeoMedicines(homeoMedicines.filter(m => m.id !== id));
   };
 
-  // Add Allo row
+  // Add Supportive row
   const addAlloRow = () => {
     const newAm: AlloMedicine = {
       id: `am-${Date.now()}`,
@@ -160,16 +185,35 @@ export const PrescriptionView: React.FC = () => {
       dietaryAdvise,
       investigationsOrdered,
       followUpDate,
-      doctorName: 'Dr. Anand Deshpande',
-      doctorDegree: 'M.D. (Homoeopathy), C.C.M.P.',
-      doctorRegNo: 'MCH-48921-A',
-      clinicName: 'ClinicaPro Holistic Healthcare & Research Centre',
-      clinicAddress: 'Suite 204, Mediplex Arcade, F.C. Road, Shivajinagar, Pune - 411005',
-      clinicPhone: '+91 20 2553 9088 / +91 98220 12345'
+      doctorName: CLINIC_CONFIG.doctorName,
+      doctorDegree: CLINIC_CONFIG.qualifications,
+      doctorRegNo: CLINIC_CONFIG.regNo,
+      clinicName: CLINIC_CONFIG.appName,
+      clinicAddress: CLINIC_CONFIG.address,
+      clinicPhone: CLINIC_CONFIG.phone
     });
 
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 2500);
+  };
+
+  const handlePrint = () => {
+    if (activeSubTab !== 'preview') {
+      setActiveSubTab('preview');
+      setTimeout(() => {
+        window.print();
+      }, 150);
+    } else {
+      window.print();
+    }
+  };
+
+  const handleWhatsAppShare = () => {
+    if (!selectedPatient) return;
+    openWhatsAppShareDialog(
+      selectedPatient.id,
+      activeSystemFormKey || 'headache'
+    );
   };
 
   if (!selectedPatient) {
@@ -185,11 +229,11 @@ export const PrescriptionView: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 no-print">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
-              Integrated Homeopathy + Allopathy Prescriptions
+            <span className="text-[11px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Clinical Prescription Slip
             </span>
             <span className="text-slate-400">•</span>
             <span className="text-xs text-slate-600">
@@ -198,15 +242,16 @@ export const PrescriptionView: React.FC = () => {
           </div>
           <h2 className="text-xl font-bold text-slate-900 font-serif flex items-center gap-2">
             <Pill className="w-5 h-5 text-emerald-600" />
-            Clinical Prescription Slip
+            Medical Prescription Letterhead
           </h2>
           <p className="text-xs text-slate-500">
-            Generate dual Homeopathic constitutional and Allopathic supportive prescriptions with formal printable letterhead.
+            Enlarged, high-legibility prescription slip with clinical BP & Blood Sugar records.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Sub-tab switcher */}
           <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button
               onClick={() => setActiveSubTab('editor')}
@@ -230,17 +275,61 @@ export const PrescriptionView: React.FC = () => {
             </button>
           </div>
 
+          {/* Font scale selector for letterhead */}
+          <div className="hidden sm:flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
+            <span className="text-slate-500 px-1 font-medium">Font:</span>
+            <button
+              onClick={() => setFontScale('standard')}
+              className={`px-2 py-1 rounded-lg font-semibold transition-colors ${
+                fontScale === 'standard' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Standard font size"
+            >
+              Standard
+            </button>
+            <button
+              onClick={() => setFontScale('large')}
+              className={`px-2 py-1 rounded-lg font-bold transition-colors ${
+                fontScale === 'large' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Large font size (Recommended)"
+            >
+              Large
+            </button>
+            <button
+              onClick={() => setFontScale('xl')}
+              className={`px-2 py-1 rounded-lg font-extrabold transition-colors ${
+                fontScale === 'xl' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              }`}
+              title="Extra Large font size"
+            >
+              XL
+            </button>
+          </div>
+
+          {/* Save Button */}
           <button
             id="btn-save-prescription"
             onClick={handleSave}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
           >
             <Save className="w-4 h-4" />
-            <span>Save Prescription</span>
+            <span>Save Rx</span>
           </button>
 
+          {/* WhatsApp Share Button */}
           <button
-            onClick={() => window.print()}
+            onClick={handleWhatsAppShare}
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
+            title="Share Prescription via WhatsApp"
+          >
+            <MessageCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">WhatsApp</span>
+          </button>
+
+          {/* Print Button */}
+          <button
+            onClick={handlePrint}
             className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
           >
             <Printer className="w-4 h-4" />
@@ -250,7 +339,7 @@ export const PrescriptionView: React.FC = () => {
       </div>
 
       {saveSuccess && (
-        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-semibold text-xs flex items-center gap-2">
+        <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-semibold text-xs flex items-center gap-2 no-print">
           <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           Prescription saved and attached to {selectedPatient.name}'s medical record.
         </div>
@@ -261,23 +350,45 @@ export const PrescriptionView: React.FC = () => {
         <div className="space-y-6 text-xs">
           {/* Diagnosis & Clinical Vitals */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-slate-400">
-              Clinical Diagnosis & Encounter Vitals
+            <h3 className="font-bold text-slate-900 text-sm uppercase tracking-wider text-slate-500">
+              Clinical Diagnosis & Patient Encounter Vitals
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="md:col-span-2">
-                <label className="block font-bold text-slate-800 mb-1">Clinical Diagnosis *</label>
+                <label className="block font-bold text-slate-800 mb-1 text-xs">Clinical Diagnosis *</label>
                 <input
                   type="text"
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
                   placeholder="e.g. Chronic Migraine with Gastrointestinal Dyspepsia"
-                  className="w-full border border-slate-300 rounded-lg p-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none font-medium"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Next Follow-up Date</label>
+                <label className="block font-bold text-slate-800 mb-1 text-xs">Blood Pressure (BP)</label>
+                <input
+                  type="text"
+                  value={bpValue}
+                  onChange={(e) => setBpValue(e.target.value)}
+                  placeholder="e.g. 120/80 mmHg"
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none font-semibold text-teal-900"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-800 mb-1 text-xs">Blood Sugar (RBS)</label>
+                <input
+                  type="text"
+                  value={sugarValue}
+                  onChange={(e) => setSugarValue(e.target.value)}
+                  placeholder="e.g. 110 mg/dL"
+                  className="w-full border border-slate-300 rounded-lg p-2.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none font-semibold text-teal-900"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium text-slate-700 mb-1 text-xs">Next Follow-up Date</label>
                 <input
                   type="date"
                   value={followUpDate}
@@ -434,18 +545,18 @@ export const PrescriptionView: React.FC = () => {
             </div>
           </div>
 
-          {/* Section 2: Allopathic Prescriptions */}
+          {/* Section 2: Additional / Supportive Medications */}
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
-                  A
+                  M
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm">
-                    Allopathic Prescriptions (Supportive & Acute Care)
+                    Supportive & Additional Medications
                   </h3>
-                  <p className="text-[11px] text-slate-500">Generic / Brand name, strength, food timing, duration</p>
+                  <p className="text-[11px] text-slate-500">Medicine name, strength, food timing, duration</p>
                 </div>
               </div>
               <button
@@ -466,7 +577,7 @@ export const PrescriptionView: React.FC = () => {
                 >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-slate-700 text-xs">
-                      #{index + 1} Allopathic Medication
+                      #{index + 1} Medication
                     </span>
                     <button
                       type="button"
@@ -500,7 +611,7 @@ export const PrescriptionView: React.FC = () => {
                         onChange={(e) => {
                           const copy = [...alloMedicines];
                           copy[index].type = e.target.value as any;
-                          setHomeoMedicines(copy as any);
+                          setAlloMedicines(copy);
                         }}
                         className="w-full bg-white border border-slate-300 rounded-lg p-1.5 text-xs text-slate-900 focus:outline-none"
                       >
@@ -590,138 +701,173 @@ export const PrescriptionView: React.FC = () => {
         </div>
       ) : (
         /* Letterhead Printable Rx Paper */
-        <div id="prescription-paper" className="bg-white rounded-2xl border border-slate-300 shadow-md p-8 sm:p-12 space-y-6 text-xs text-slate-800 max-w-4xl mx-auto">
+        <div
+          id="prescription-paper"
+          className={`bg-white rounded-2xl border border-slate-300 shadow-md p-8 sm:p-12 space-y-6 text-slate-900 max-w-4xl mx-auto ${
+            fontScale === 'xl' ? 'text-base' : fontScale === 'large' ? 'text-sm' : 'text-xs'
+          }`}
+        >
           {/* Header */}
-          <div className="border-b-2 border-teal-800 pb-4 flex flex-col sm:flex-row items-start justify-between gap-4">
+          <div className="border-b-2 border-teal-800 pb-5 flex flex-col sm:flex-row items-start justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-slate-900 font-serif">
-                Dr. Bharat's Aroga Homeopathy
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-teal-950 font-serif tracking-tight">
+                {CLINIC_CONFIG.appName}
               </h1>
-              <p className="text-xs font-semibold text-teal-800 mt-0.5">
+              <p className="text-base sm:text-lg font-bold text-teal-800 mt-1">
                 {CLINIC_CONFIG.doctorName}, {CLINIC_CONFIG.qualifications} • Reg No: {CLINIC_CONFIG.regNo}
               </p>
-              <p className="text-[11px] text-slate-500">
-                {CLINIC_CONFIG.address} • Tel: {CLINIC_CONFIG.phone}
+              <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed max-w-xl">
+                {CLINIC_CONFIG.address} • Tel: <strong className="text-slate-800">{CLINIC_CONFIG.phone}</strong>
               </p>
             </div>
 
-            <div className="sm:text-right text-[11px] text-slate-600">
-              <div>Date: <strong>{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></div>
-              <div>Rx ID: <strong>{existingRx?.id || 'RX-8801'}</strong></div>
-              <div className="text-teal-700 font-semibold">Clinic Reg: {CLINIC_CONFIG.regNo} (Belgaum)</div>
+            <div className="sm:text-right text-xs sm:text-sm text-slate-700 bg-teal-50/60 p-3 rounded-xl border border-teal-100/80 min-w-[190px]">
+              <div>Date: <strong className="text-slate-900">{new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></div>
+              <div>Rx ID: <strong className="text-slate-900">{existingRx?.id || 'RX-8801'}</strong></div>
+              <div className="text-teal-800 font-semibold mt-0.5">Clinic Reg: {CLINIC_CONFIG.regNo}</div>
             </div>
           </div>
 
-          {/* Patient Details & Vitals Strip */}
-          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px]">
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase">Patient</span>
-              <strong className="text-slate-900 text-xs">{selectedPatient.name}</strong>
-              <span className="text-slate-500 block">{selectedPatient.age}y / {selectedPatient.gender}</span>
+          {/* Patient Details & Vitals Strip - NO BLOOD GROUP, NO MOBILE NUMBER, ONLY BP & SUGAR */}
+          <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {/* Column 1: Patient Name & Age / Gender */}
+            <div className="border-b sm:border-b-0 sm:border-r border-slate-200/80 sm:pr-4 pb-3 sm:pb-0">
+              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
+                Patient Details
+              </span>
+              <div className="text-lg sm:text-xl font-bold text-slate-900 leading-tight">
+                {selectedPatient.name}
+              </div>
+              <span className="text-slate-700 text-sm font-semibold block mt-0.5">
+                {selectedPatient.age} Yrs • {selectedPatient.gender} <span className="text-slate-400 font-normal">| ID: {selectedPatient.id}</span>
+              </span>
             </div>
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase">Blood Group & Sugar</span>
-              <strong className="text-slate-900 font-semibold">{selectedPatient.bloodGroup}</strong>
-              <span className="text-slate-500 block">RBS: {selectedPatient.vitals.rbs} mg/dL</span>
+
+            {/* Column 2: Blood Pressure (BP) ONLY */}
+            <div className="border-b sm:border-b-0 sm:border-r border-slate-200/80 sm:pr-4 sm:pl-2 pb-3 sm:pb-0">
+              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
+                Blood Pressure (BP)
+              </span>
+              <div className="text-lg sm:text-xl font-extrabold text-slate-900">
+                {bpValue || `${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`}
+              </div>
+              <span className="text-slate-500 text-xs block mt-0.5">
+                Systolic / Diastolic
+              </span>
             </div>
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase">Mobile</span>
-              <strong className="text-slate-800">{selectedPatient.mobile}</strong>
-              <span className="text-slate-500 block">ID: {selectedPatient.id}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block text-[10px] uppercase">Vitals at Consult</span>
-              <strong className="text-slate-900">BP {selectedPatient.vitals.bpSystolic}/{selectedPatient.vitals.bpDiastolic} mmHg</strong>
-              <span className="text-slate-500 block">Wt {selectedPatient.vitals.weight}kg • Pulse {selectedPatient.vitals.pulse}</span>
+
+            {/* Column 3: Blood Sugar ONLY */}
+            <div className="sm:pl-2">
+              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
+                Blood Sugar
+              </span>
+              <div className="text-lg sm:text-xl font-extrabold text-slate-900">
+                {sugarValue || `${selectedPatient.vitals.rbs} mg/dL`}
+              </div>
+              <span className="text-slate-500 text-xs block mt-0.5">
+                Random Blood Sugar (RBS)
+              </span>
             </div>
           </div>
 
-          {/* Diagnosis */}
-          <div className="border-b border-slate-200 pb-3">
-            <span className="font-bold text-slate-400 text-[10px] uppercase tracking-wider block">
+          {/* Clinical Diagnosis */}
+          <div className="border-b border-slate-200 pb-4">
+            <span className="font-bold text-slate-500 text-xs uppercase tracking-wider block mb-1">
               Provisional Clinical Diagnosis:
             </span>
-            <p className="text-slate-900 font-bold text-sm">{diagnosis}</p>
+            <p className="text-slate-900 font-bold text-lg sm:text-xl leading-snug">
+              {diagnosis}
+            </p>
           </div>
 
-          {/* Rx Symbol & Homeo Section */}
+          {/* Rx Symbol & Medications List - DIRECT MEDICINE NAMES, NO ALLOPATHIC LABEL */}
           <div className="space-y-4">
-            <div className="text-2xl font-serif font-bold text-teal-800 italic">℞</div>
+            <div className="flex items-center gap-3">
+              <span className="text-4xl sm:text-5xl font-serif font-bold text-teal-900 italic select-none">
+                ℞
+              </span>
+            </div>
 
-            {homeoMedicines.length > 0 && (
-              <div className="space-y-3">
-                <div className="text-xs font-bold text-teal-900 uppercase tracking-wider border-b border-teal-100 pb-1">
-                  1. Homeopathic Constitutional & Acute Remedies
-                </div>
-                <div className="space-y-2 pl-3">
-                  {homeoMedicines.map((hm, idx) => (
-                    <div key={hm.id} className="text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">
-                          {idx + 1}. {hm.remedy} {hm.potency}
-                        </span>
-                        <span className="text-slate-500">
-                          ({hm.form}) — <strong>{hm.dosage}</strong>, {hm.frequency}
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-600 pl-4 mt-0.5">
-                        ↳ Instructions: {hm.instructions} ({hm.duration})
-                      </div>
+            <div className="space-y-4 pl-2">
+              {/* Homeopathic Medicines */}
+              {homeoMedicines.map((hm, idx) => (
+                <div key={hm.id} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="font-bold text-slate-900 text-base sm:text-lg">
+                      {idx + 1}. {hm.remedy} {hm.potency}
+                    </span>
+                    <span className="text-slate-700 text-sm sm:text-base">
+                      ({hm.form}) — <strong className="text-slate-900">{hm.dosage}</strong>, <span className="font-semibold text-teal-800">{hm.frequency}</span>
+                    </span>
+                    {hm.duration && (
+                      <span className="text-slate-500 text-xs sm:text-sm">
+                        [{hm.duration}]
+                      </span>
+                    )}
+                  </div>
+                  {hm.instructions && (
+                    <div className="text-xs sm:text-sm text-slate-700 pl-5 mt-1 font-medium">
+                      ↳ Instructions: {hm.instructions}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
+              ))}
 
-            {alloMedicines.length > 0 && (
-              <div className="space-y-3 pt-2">
-                <div className="text-xs font-bold text-indigo-900 uppercase tracking-wider border-b border-indigo-100 pb-1">
-                  2. Allopathic Supportive Medications
-                </div>
-                <div className="space-y-2 pl-3">
-                  {alloMedicines.map((am, idx) => (
-                    <div key={am.id} className="text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-900 text-sm">
-                          {idx + 1}. {am.name} ({am.type})
-                        </span>
-                        <span className="text-slate-500">
-                          — <strong>{am.frequency}</strong> [{am.timing}] for {am.duration}
-                        </span>
-                      </div>
-                      {am.instructions && (
-                        <div className="text-[11px] text-slate-600 pl-4 mt-0.5">
-                          ↳ Notes: {am.instructions}
-                        </div>
-                      )}
+              {/* Supportive / Additional Medicines - SIMPLY MEDICINE NAME, NO ALLOPATHIC LABEL */}
+              {alloMedicines.map((am, idx) => (
+                <div key={am.id} className="pb-3 border-b border-slate-100 last:border-0 last:pb-0">
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="font-bold text-slate-900 text-base sm:text-lg">
+                      {homeoMedicines.length + idx + 1}. {am.name} {am.strength ? `(${am.strength})` : ''}
+                    </span>
+                    <span className="text-slate-700 text-sm sm:text-base">
+                      {am.type && `[${am.type}]`} — <strong className="text-slate-900">{am.frequency}</strong> {am.timing ? `(${am.timing})` : ''}
+                    </span>
+                    {am.duration && (
+                      <span className="text-slate-500 text-xs sm:text-sm">
+                        for {am.duration}
+                      </span>
+                    )}
+                  </div>
+                  {am.instructions && (
+                    <div className="text-xs sm:text-sm text-slate-700 pl-5 mt-1 font-medium">
+                      ↳ Instructions: {am.instructions}
                     </div>
-                  ))}
+                  )}
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
           </div>
 
-          {/* Diet & Investigations */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-200 text-xs">
+          {/* Diet, Lifestyle Advice & Investigations */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
             <div>
-              <span className="font-bold text-slate-900 block mb-1">Dietary & Lifestyle Advice:</span>
-              <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
+              <span className="font-bold text-slate-900 text-sm sm:text-base block mb-1.5">
+                Dietary & Lifestyle Advice:
+              </span>
+              <ul className="list-disc pl-5 space-y-1.5 text-slate-700 text-xs sm:text-sm leading-relaxed">
                 {dietaryAdviseText.split('\n').filter(Boolean).map((d, i) => (
                   <li key={i}>{d}</li>
                 ))}
               </ul>
             </div>
 
-            <div>
+            <div className="space-y-4">
               {investigationsText && (
-                <div className="mb-3">
-                  <span className="font-bold text-slate-900 block mb-1">Investigations Advised:</span>
-                  <p className="text-slate-600 text-[11px]">{investigationsText}</p>
+                <div>
+                  <span className="font-bold text-slate-900 text-sm sm:text-base block mb-1.5">
+                    Investigations Advised:
+                  </span>
+                  <p className="text-slate-700 text-xs sm:text-sm leading-relaxed bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                    {investigationsText}
+                  </p>
                 </div>
               )}
               <div>
-                <span className="font-bold text-slate-900 block mb-1">Next Follow-up Appointment:</span>
-                <p className="text-emerald-700 font-bold text-xs">
+                <span className="font-bold text-slate-900 text-sm sm:text-base block mb-1">
+                  Next Follow-up Appointment:
+                </span>
+                <p className="text-emerald-800 font-bold text-sm sm:text-base">
                   {new Date(followUpDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
@@ -729,21 +875,21 @@ export const PrescriptionView: React.FC = () => {
           </div>
 
           {/* Doctor Signature & Verification QR */}
-          <div className="pt-8 border-t border-slate-200 flex items-end justify-between">
+          <div className="pt-8 border-t-2 border-slate-200 flex items-end justify-between">
             <div className="flex items-center gap-3">
-              <QrCode className="w-12 h-12 text-slate-800" />
-              <div className="text-[10px] text-slate-400 max-w-[200px] leading-tight">
-                Dr. Bharat's Aroga Homeopathy Digitally Signed Rx • Dr. Bharat Chougule • Belgaum 591108
+              <QrCode className="w-14 h-14 text-slate-800 shrink-0" />
+              <div className="text-xs text-slate-500 max-w-[240px] leading-tight">
+                {CLINIC_CONFIG.appName} Digitally Verified Prescription Slip • {CLINIC_CONFIG.doctorName} • Belgaum 591108
               </div>
             </div>
 
             <div className="text-right">
-              <div className="font-serif italic text-base text-slate-900 font-bold">
+              <div className="font-serif italic text-xl text-slate-900 font-bold">
                 {CLINIC_CONFIG.doctorName}
               </div>
-              <div className="text-[11px] text-slate-600 font-medium">{CLINIC_CONFIG.qualifications}</div>
-              <div className="text-[10px] text-slate-400">Reg. No: {CLINIC_CONFIG.regNo}</div>
-              <div className="text-[9px] text-teal-800 font-medium">1st Floor Mahalaxmi plaza, Hindalga, Belgaum</div>
+              <div className="text-sm text-teal-800 font-bold">{CLINIC_CONFIG.qualifications}</div>
+              <div className="text-xs text-slate-600 font-medium">Reg. No: {CLINIC_CONFIG.regNo}</div>
+              <div className="text-xs text-slate-500 mt-0.5">1st Floor Mahalaxmi plaza, Hindalga, Belgaum</div>
             </div>
           </div>
         </div>
@@ -751,3 +897,4 @@ export const PrescriptionView: React.FC = () => {
     </div>
   );
 };
+
