@@ -66,11 +66,13 @@ export const PatientBanner: React.FC<PatientBannerProps> = ({ onOpenNewPatient }
                 <ChevronDown className="w-4 h-4 text-slate-400 absolute right-1 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
 
-              {/* Blood Group */}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                <Droplet className="w-3 h-3 text-rose-500" />
-                {selectedPatient.bloodGroup}
-              </span>
+              {/* Blood Group if recorded */}
+              {selectedPatient.bloodGroup && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                  <Droplet className="w-3 h-3 text-rose-500" />
+                  {selectedPatient.bloodGroup}
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-3 text-xs text-slate-500 mt-0.5 flex-wrap">

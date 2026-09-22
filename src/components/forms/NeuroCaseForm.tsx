@@ -119,20 +119,20 @@ const INITIAL_NEURO_DATA: NeuroFormData = {
   occupation: '',
   address: '',
 
-  mainComplaint: ['Headache'],
+  mainComplaint: [],
   otherComplaint: '',
 
-  headacheLocation: ['Temples', 'Forehead'],
-  headacheType: ['Throbbing'],
-  headacheSeverity: 'Moderate',
-  headacheScore: '6',
-  headacheDuration: '4-6 hours',
-  headacheFrequency: '2-3 times/week',
-  headacheTime: 'Afternoon',
-  headacheOnset: 'Gradual',
-  headacheTrigger: ['Stress', 'Screen', 'Heat'],
-  headacheAssociated: ['Photophobia', 'Nausea'],
-  headacheRelief: 'Dark quiet room, cold compress, sleep',
+  headacheLocation: [],
+  headacheType: [],
+  headacheSeverity: '',
+  headacheScore: '',
+  headacheDuration: '',
+  headacheFrequency: '',
+  headacheTime: '',
+  headacheOnset: '',
+  headacheTrigger: [],
+  headacheAssociated: [],
+  headacheRelief: '',
   headacheDetails: '',
 
   dizziness: [],
@@ -161,11 +161,11 @@ const INITIAL_NEURO_DATA: NeuroFormData = {
 
   speech: [],
   memory: [],
-  vision: ['Light Sensitivity'],
+  vision: [],
   balance: [],
-  sleep: ['Insomnia'],
+  sleep: [],
 
-  previousHistory: ['Migraine'],
+  previousHistory: [],
   previousDetails: '',
 
   investigation: [],
@@ -175,13 +175,13 @@ const INITIAL_NEURO_DATA: NeuroFormData = {
 
   redFlag: [],
 
-  diagnosis: 'Classical Migraine / hemicrania with photophobia',
-  affectedArea: 'Frontotemporal & Occipital nerve distribution',
-  clinicalSeverity: 'Moderate',
-  clinicalStatus: 'Recurrent',
+  diagnosis: '',
+  affectedArea: '',
+  clinicalSeverity: '',
+  clinicalStatus: '',
   clinicalNotes: '',
-  treatment: 'Belladonna 200C stat, followed by Natrum Muriaticum 200C weekly',
-  advice: 'Blue-light filters on screens, hydrated diet, strict sleep schedule',
+  treatment: '',
+  advice: '',
   followup: ''
 };
 
@@ -236,14 +236,15 @@ export const NeuroCaseForm: React.FC = () => {
         }
       } catch (_) {}
 
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
+        ...INITIAL_NEURO_DATA,
         patientName: selectedPatient.name,
         age: String(selectedPatient.age || ''),
         gender: selectedPatient.gender === 'Female' ? 'Female' : selectedPatient.gender === 'Male' ? 'Male' : 'Other',
         mobile: selectedPatient.mobile || '',
-        address: selectedPatient.address || ''
-      }));
+        address: selectedPatient.address || '',
+        date: new Date().toISOString().split('T')[0]
+      });
     }
   }, [selectedPatient?.id, systemForms]);
 
@@ -643,6 +644,7 @@ export const NeuroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>
@@ -696,6 +698,7 @@ export const NeuroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Time / निवडा</option>
               <option value="Morning">Morning / सकाळी</option>
               <option value="Afternoon">Afternoon / दुपारी</option>
               <option value="Evening">Evening / संध्याकाळी</option>
@@ -712,6 +715,7 @@ export const NeuroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Onset / निवडा</option>
               <option value="Sudden">Sudden / अचानक</option>
               <option value="Gradual">Gradual / हळूहळू</option>
               <option value="Intermittent">Intermittent / थांबून थांबून</option>
@@ -1399,6 +1403,7 @@ export const NeuroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>
@@ -1413,6 +1418,7 @@ export const NeuroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Status / निवडा</option>
               <option value="Stable">Stable / स्थिर</option>
               <option value="Improving">Improving / सुधारणा</option>
               <option value="Worsening">Worsening / वाढते आहे</option>

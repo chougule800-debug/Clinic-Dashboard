@@ -714,7 +714,7 @@ export const PrescriptionView: React.FC = () => {
                 {CLINIC_CONFIG.appName}
               </h1>
               <p className="text-base sm:text-lg font-bold text-teal-800 mt-1">
-                {CLINIC_CONFIG.doctorName}, {CLINIC_CONFIG.qualifications} • Reg No: {CLINIC_CONFIG.regNo}
+                {CLINIC_CONFIG.doctorName}, {CLINIC_CONFIG.qualifications}
               </p>
               <p className="text-xs sm:text-sm text-slate-600 mt-1 leading-relaxed max-w-xl">
                 {CLINIC_CONFIG.address} • Tel: <strong className="text-slate-800">{CLINIC_CONFIG.phone}</strong>
@@ -728,10 +728,10 @@ export const PrescriptionView: React.FC = () => {
             </div>
           </div>
 
-          {/* Patient Details & Vitals Strip - NO BLOOD GROUP, NO MOBILE NUMBER, ONLY BP & SUGAR */}
-          <div className="bg-slate-50/80 p-5 rounded-2xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Column 1: Patient Name & Age / Gender */}
-            <div className="border-b sm:border-b-0 sm:border-r border-slate-200/80 sm:pr-4 pb-3 sm:pb-0">
+          {/* Patient Details & Vitals Strip */}
+          <div className="bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            {/* Patient Details */}
+            <div>
               <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
                 Patient Details
               </span>
@@ -743,30 +743,26 @@ export const PrescriptionView: React.FC = () => {
               </span>
             </div>
 
-            {/* Column 2: Blood Pressure (BP) ONLY */}
-            <div className="border-b sm:border-b-0 sm:border-r border-slate-200/80 sm:pr-4 sm:pl-2 pb-3 sm:pb-0">
-              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
-                Blood Pressure (BP)
+            {/* Single Heading Vitals in Small Size */}
+            <div className="sm:border-l sm:border-slate-200 sm:pl-6 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-200">
+              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-1">
+                Vitals
               </span>
-              <div className="text-lg sm:text-xl font-extrabold text-slate-900">
-                {bpValue || `${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`}
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <span className="text-slate-500 font-medium">Blood Pressure:</span>
+                  <strong className="text-slate-900 font-bold">
+                    {bpValue || `${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`}
+                  </strong>
+                </div>
+                <span className="text-slate-300 hidden sm:inline">•</span>
+                <div className="flex items-center gap-1.5 text-slate-700">
+                  <span className="text-slate-500 font-medium">Sugar:</span>
+                  <strong className="text-slate-900 font-bold">
+                    {sugarValue || `${selectedPatient.vitals.rbs} mg/dL`}
+                  </strong>
+                </div>
               </div>
-              <span className="text-slate-500 text-xs block mt-0.5">
-                Systolic / Diastolic
-              </span>
-            </div>
-
-            {/* Column 3: Blood Sugar ONLY */}
-            <div className="sm:pl-2">
-              <span className="text-slate-500 block text-xs uppercase font-bold tracking-wider mb-0.5">
-                Blood Sugar
-              </span>
-              <div className="text-lg sm:text-xl font-extrabold text-slate-900">
-                {sugarValue || `${selectedPatient.vitals.rbs} mg/dL`}
-              </div>
-              <span className="text-slate-500 text-xs block mt-0.5">
-                Random Blood Sugar (RBS)
-              </span>
             </div>
           </div>
 

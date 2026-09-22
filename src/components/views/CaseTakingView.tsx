@@ -51,7 +51,7 @@ export const CaseTakingView: React.FC = () => {
     : undefined;
 
   const [chiefComplaints, setChiefComplaints] = useState('');
-  const [duration, setDuration] = useState('Since 3 months');
+  const [duration, setDuration] = useState('');
   const [severity, setSeverity] = useState<'Mild' | 'Moderate' | 'Severe'>('Moderate');
   const [modalitiesAggravation, setModalitiesAggravation] = useState('');
   const [modalitiesAmelioration, setModalitiesAmelioration] = useState('');

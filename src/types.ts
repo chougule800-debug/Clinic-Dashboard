@@ -3,12 +3,13 @@ export type Gender = 'Male' | 'Female' | 'Other';
 export interface PatientVitals {
   bpSystolic: number;
   bpDiastolic: number;
-  pulse: number;
-  temperature: number;
-  spo2: number;
+  pulse?: number;
+  temperature?: number;
+  spo2?: number;
   weight: number; // kg
-  height: number; // cm
-  bmi: number;
+  height: number; // inch
+  heightInch?: number;
+  bmi?: number;
   rbs: number; // mg/dL
   respiratoryRate?: number;
 }
@@ -20,13 +21,13 @@ export interface Patient {
   name: string;
   age: number;
   gender: Gender;
-  dob: string;
+  dob?: string;
   mobile: string;
   email?: string;
-  bloodGroup: string;
+  bloodGroup?: string;
   address: string;
   occupation?: string;
-  emergencyContact: string;
+  emergencyContact?: string;
   vitals: PatientVitals;
   allergies: string[];
   chronicDiseases: string[];

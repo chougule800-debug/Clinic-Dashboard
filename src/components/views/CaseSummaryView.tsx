@@ -190,15 +190,17 @@ export const CaseSummaryView: React.FC = () => {
           </div>
 
           <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Blood Group & Sugar</div>
-            <div className="font-bold text-slate-900 text-xs">{selectedPatient.bloodGroup} Blood Group</div>
-            <div className="text-slate-600 font-semibold text-[11px]">RBS: {selectedPatient.vitals.rbs} mg/dL</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400">Clinical Sugar</div>
+            <div className="font-bold text-slate-900 text-xs">RBS: {selectedPatient.vitals.rbs} mg/dL</div>
+            {selectedPatient.bloodGroup && (
+              <div className="text-slate-500 font-medium text-[11px]">{selectedPatient.bloodGroup} Blood Group</div>
+            )}
           </div>
 
           <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Contact / Emergency</div>
+            <div className="text-[10px] uppercase font-bold text-slate-400">Contact Details</div>
             <div className="font-bold text-slate-800">{selectedPatient.mobile}</div>
-            <div className="text-slate-500 text-[11px]">{selectedPatient.bloodGroup} Blood Group</div>
+            <div className="text-slate-500 text-[11px] truncate max-w-[140px]">{selectedPatient.address}</div>
           </div>
 
           <div>

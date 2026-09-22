@@ -138,7 +138,10 @@ export const PatientsView: React.FC<PatientsViewProps> = ({ onOpenNewPatient }) 
                         {patient.name}
                       </h3>
                       <div className="text-xs text-slate-500">
-                        {patient.age} yrs • {patient.gender} • <span className="font-semibold text-rose-600">{patient.bloodGroup}</span>
+                        {patient.age} yrs • {patient.gender}
+                        {patient.bloodGroup && (
+                          <span> • <span className="font-semibold text-rose-600">{patient.bloodGroup}</span></span>
+                        )}
                       </div>
                     </div>
                   </div>

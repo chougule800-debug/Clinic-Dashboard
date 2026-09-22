@@ -23,8 +23,8 @@ export const RemoteIntakeModal: React.FC = () => {
   } = useClinic();
 
   const [chiefComplaints, setChiefComplaints] = useState('');
-  const [duration, setDuration] = useState('2 weeks');
-  const [severity, setSeverity] = useState<'Mild' | 'Moderate' | 'Severe'>('Moderate');
+  const [duration, setDuration] = useState('');
+  const [severity, setSeverity] = useState<'Mild' | 'Moderate' | 'Severe' | ''>('');
   const [modalitiesAggravation, setModalitiesAggravation] = useState('');
   const [modalitiesAmelioration, setModalitiesAmelioration] = useState('');
   const [concomitants, setConcomitants] = useState('');
@@ -194,6 +194,7 @@ export const RemoteIntakeModal: React.FC = () => {
                     onChange={(e) => setSeverity(e.target.value as any)}
                     className="w-full border border-slate-300 rounded-lg p-2 text-xs text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                   >
+                    <option value="">Select Severity</option>
                     <option value="Mild">Mild</option>
                     <option value="Moderate">Moderate</option>
                     <option value="Severe">Severe</option>

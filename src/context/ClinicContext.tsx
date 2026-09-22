@@ -127,7 +127,20 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [systemForms, setSystemForms] = useState<SystemFormRecord[]>(() => {
     try {
       const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_system_forms`);
-      return stored ? JSON.parse(stored) : INITIAL_SYSTEM_FORMS;
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (f: any) =>
+              !f.id?.startsWith('REC-HD-1001') &&
+              !f.id?.startsWith('REC-GIT-1001') &&
+              !f.id?.startsWith('REC-MSK-1002') &&
+              !f.id?.startsWith('REC-RESP-1003') &&
+              !f.id?.startsWith('REC-SKIN-1001')
+          );
+        }
+      }
+      return INITIAL_SYSTEM_FORMS;
     } catch {
       return INITIAL_SYSTEM_FORMS;
     }

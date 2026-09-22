@@ -117,30 +117,30 @@ const INITIAL_URINARY_DATA: UrinaryFormData = {
   mobile: '',
   address: '',
 
-  mainComplaint: ['Burning Urination', 'Frequent Urination'],
-  complaintDuration: '2 weeks',
-  complaintOnset: 'Sudden',
-  complaintSeverity: 'Moderate',
+  mainComplaint: [],
+  complaintDuration: '',
+  complaintOnset: '',
+  complaintSeverity: '',
 
-  dayFrequency: '7-8 times',
-  nightFrequency: '2 times',
-  approxQuantity: 'Normal',
-  timeToStart: 'Immediate',
-  needToStrain: 'No',
-  streamDuration: 'Normal',
+  dayFrequency: '',
+  nightFrequency: '',
+  approxQuantity: '',
+  timeToStart: '',
+  needToStrain: '',
+  streamDuration: '',
 
-  dysuria: ['Burning During Urination'],
-  dysuriaDetails: 'Scalding sensation towards the end of urination with mild lower abdominal discomfort',
+  dysuria: [],
+  dysuriaDetails: '',
 
-  urineChars: ['Dark', 'Cloudy'],
-  urineColour: 'Dark Yellow',
-  urineOdour: 'Strong',
-  urineChangeSince: '1 week',
+  urineChars: [],
+  urineColour: '',
+  urineOdour: '',
+  urineChangeSince: '',
 
   flankPain: [],
-  flankSeverity: 'Mild',
+  flankSeverity: '',
   flankDuration: '',
-  flankNausea: 'No',
+  flankNausea: '',
 
   stoneHistory: [],
   stoneSize: '',
@@ -148,10 +148,10 @@ const INITIAL_URINARY_DATA: UrinaryFormData = {
   stoneSide: '',
   stoneDetails: '',
 
-  utiHistory: ['Burning', 'Frequency', 'Urgency'],
-  utiEpisodes: '2 episodes this year',
+  utiHistory: [],
+  utiEpisodes: '',
   utiLastEpisode: '',
-  utiCulture: 'No',
+  utiCulture: '',
 
   prostateSymptoms: [],
   prostateHistory: [],
@@ -163,28 +163,28 @@ const INITIAL_URINARY_DATA: UrinaryFormData = {
   maleGenital: [],
   maleGenitalDetails: '',
 
-  femaleUrinary: ['Recurrent UTI', 'Burning Urination', 'Urinary Frequency'],
-  femaleUrinaryDetails: 'Recurrent burning after spicy food and long travels with inadequate water intake',
+  femaleUrinary: [],
+  femaleUrinaryDetails: '',
 
-  waterIntake: '1.5 Litres/day (Low)',
-  thirst: 'Decreased / कमी',
-  nightWaterIntake: 'No',
+  waterIntake: '',
+  thirst: '',
+  nightWaterIntake: '',
 
-  previousRenalHistory: ['UTI'],
+  previousRenalHistory: [],
   previousRenalDetails: '',
 
-  investigations: ['Urine Routine'],
-  investigationFindings: 'Urine R/M: Pus cells 15-20/hpf, RBCs 1-2, Epithelial cells plenty, Albumin trace',
+  investigations: [],
+  investigationFindings: '',
 
   redFlags: [],
   urgentNotes: '',
 
-  diagnosis: 'Acute Cystitis / Lower Urinary Tract Infection with dysuria',
-  affectedRegion: 'Bladder & Urethra',
-  clinicalSeverity: 'Moderate',
-  clinicalNotes: 'Cantharis totality with burning scalding dysuria and drop-by-drop urgency.',
-  treatment: 'Cantharis 200C QDS for 3 days, followed by Berberis Vulgaris Q 10 drops TDS',
-  advice: 'Hydration 3.0–3.5 Litres daily, coconut water, barley water, avoid holding urine',
+  diagnosis: '',
+  affectedRegion: '',
+  clinicalSeverity: '',
+  clinicalNotes: '',
+  treatment: '',
+  advice: '',
   followup: ''
 };
 
@@ -241,15 +241,16 @@ export const UrinaryCaseForm: React.FC = () => {
         }
       } catch (_) {}
 
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
+        ...INITIAL_URINARY_DATA,
         patientName: selectedPatient.name,
         age: String(selectedPatient.age || ''),
         sex: selectedPatient.gender === 'Female' ? 'Female / स्त्री' : selectedPatient.gender === 'Male' ? 'Male / पुरुष' : 'Other',
         patientId: selectedPatient.id,
         mobile: selectedPatient.mobile || '',
-        address: selectedPatient.address || ''
-      }));
+        address: selectedPatient.address || '',
+        date: new Date().toISOString().split('T')[0]
+      });
     }
   }, [selectedPatient?.id, systemForms]);
 
@@ -564,6 +565,7 @@ export const UrinaryCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Onset / निवडा</option>
               <option value="Sudden">Sudden / अचानक</option>
               <option value="Gradual">Gradual / हळूहळू</option>
             </select>
@@ -577,6 +579,7 @@ export const UrinaryCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>
@@ -646,6 +649,7 @@ export const UrinaryCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="No">No / नाही</option>
                 <option value="Yes">Yes / होय</option>
               </select>
@@ -738,6 +742,7 @@ export const UrinaryCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Select Colour / रंग निवडा</option>
               <option value="Pale Yellow">Pale Yellow</option>
               <option value="Dark Yellow">Dark Yellow</option>
               <option value="Brown">Brown</option>
@@ -794,6 +799,7 @@ export const UrinaryCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select Severity</option>
                 <option value="Mild">Mild</option>
                 <option value="Moderate">Moderate</option>
                 <option value="Severe">Severe</option>
@@ -807,6 +813,7 @@ export const UrinaryCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
@@ -905,6 +912,7 @@ export const UrinaryCaseForm: React.FC = () => {
               onChange={handleChange}
               className="px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Culture Done: Select</option>
               <option value="No">Culture Done: No</option>
               <option value="Yes">Culture Done: Yes</option>
             </select>
@@ -1048,6 +1056,7 @@ export const UrinaryCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select Thirst / निवडा</option>
                 <option value="Normal / सामान्य">Normal / सामान्य</option>
                 <option value="Increased / वाढलेली">Increased / वाढलेली</option>
                 <option value="Decreased / कमी">Decreased / कमी</option>
@@ -1061,6 +1070,7 @@ export const UrinaryCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2.5 py-1.5 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
@@ -1227,6 +1237,7 @@ export const UrinaryCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>

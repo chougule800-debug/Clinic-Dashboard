@@ -134,9 +134,9 @@ const INITIAL_FORM_DATA: SkinHairFormData = {
   marital: 'Single / अविवाहित',
   address: '',
 
-  skinProblem: 'Acne / मुरुम',
+  skinProblem: '',
   skinSince: '',
-  acneSeverity: 'Moderate / मध्यम',
+  acneSeverity: '',
   acneLocation: [],
   skinSymptom: [],
   acneTrigger: [],
@@ -148,44 +148,44 @@ const INITIAL_FORM_DATA: SkinHairFormData = {
 
   hairSince: '',
   dandruffSince: '',
-  hairAmount: '20–50/day / दिवसाला २०–५०',
+  hairAmount: '',
   fallWhen: [],
   symptom: [],
   pattern: [],
 
   shampoo: '',
   hairOil: '',
-  hairColour: 'No / नाही',
-  straightening: 'No / नाही',
-  heat: 'No / नाही',
-  helmet: 'No / नाही',
-  wash: '2–3 times/week / आठवड्यात २–३ वेळा',
-  water: 'No / नाही',
+  hairColour: '',
+  straightening: '',
+  heat: '',
+  helmet: '',
+  wash: '',
+  water: '',
   previousTreatment: '',
 
   menarcheAge: '',
   lmp: '',
-  cycle: 'Regular / नियमित',
-  cycleLength: '28 days',
-  bleeding: 'Moderate / मध्यम',
-  bleedingDays: '4 days',
-  periodPain: 'No / नाही',
-  clots: 'No / नाही',
+  cycle: '',
+  cycleLength: '',
+  bleeding: '',
+  bleedingDays: '',
+  periodPain: '',
+  clots: '',
   pms: '',
-  pcos: 'No / नाही',
-  facialHair: 'No / नाही',
-  periodAcne: 'No / नाही',
+  pcos: '',
+  facialHair: '',
+  periodAcne: '',
 
-  diet: 'Vegetarian / शाकाहारी',
-  protein: 'Moderate / मध्यम',
-  waterIntake: '2-3 L',
-  crashDiet: 'No / नाही',
-  appetite: 'Normal / सामान्य',
+  diet: '',
+  protein: '',
+  waterIntake: '',
+  crashDiet: '',
+  appetite: '',
   tea: '',
   dietDetails: '',
 
-  sleep: '7-8 hours normal',
-  stress: 'Moderate / मध्यम',
+  sleep: '',
+  stress: '',
   exercise: '',
   screenTime: '',
   recentIllness: '',
@@ -207,9 +207,9 @@ const INITIAL_FORM_DATA: SkinHairFormData = {
 
   otherProblems: '',
 
-  dandruffSeverity: 'Moderate / मध्यम',
-  hairSeverity: 'Moderate / मध्यम',
-  density: 'Normal / सामान्य',
+  dandruffSeverity: '',
+  hairSeverity: '',
+  density: '',
   clinicalFindings: '',
   assessment: '',
 
@@ -273,15 +273,16 @@ export const SkinHairCaseForm: React.FC = () => {
         }
       } catch (_) {}
 
-      // Fallback: Populate patient demography
-      setFormData(prev => ({
-        ...prev,
+      // Fallback: Populate fresh form with patient demography
+      setFormData({
+        ...INITIAL_FORM_DATA,
         patientName: selectedPatient.name,
         age: String(selectedPatient.age || ''),
         sex: selectedPatient.gender === 'Female' ? 'Female / स्त्री' : selectedPatient.gender === 'Male' ? 'Male / पुरुष' : 'Other / इतर',
         mobile: selectedPatient.mobile || '',
-        address: selectedPatient.address || ''
-      }));
+        address: selectedPatient.address || '',
+        date: new Date().toISOString().split('T')[0]
+      });
     }
   }, [selectedPatient?.id, systemForms]);
 
@@ -607,6 +608,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Problem / निवडा</option>
               <option value="Acne / मुरुम">Acne / मुरुम</option>
               <option value="Pimples / पुरळ">Pimples / पुरळ</option>
               <option value="Blackheads / ब्लॅकहेड्स">Blackheads / ब्लॅकहेड्स</option>
@@ -643,6 +645,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Severe / तीव्र">Severe / तीव्र</option>
@@ -903,6 +906,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select Hair Loss Amount / निवडा</option>
               <option value="Less than 20/day / दिवसाला २० पेक्षा कमी">Less than 20/day / दिवसाला २० पेक्षा कमी</option>
               <option value="20–50/day / दिवसाला २०–५०">20–50/day / दिवसाला २०–५०</option>
               <option value="50–100/day / दिवसाला ५०–१००">50–100/day / दिवसाला ५०–१००</option>
@@ -1075,6 +1079,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1090,6 +1095,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1105,6 +1111,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Occasionally / कधीकधी">Occasionally / कधीकधी</option>
               <option value="Frequently / वारंवार">Frequently / वारंवार</option>
@@ -1121,6 +1128,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Occasionally / कधीकधी">Occasionally / कधीकधी</option>
               <option value="Daily / दररोज">Daily / दररोज</option>
@@ -1137,6 +1145,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Daily / दररोज">Daily / दररोज</option>
               <option value="2–3 times/week / आठवड्यात २–३ वेळा">2–3 times/week / आठवड्यात २–३ वेळा</option>
               <option value="Weekly / आठवड्यातून एकदा">Weekly / आठवड्यातून एकदा</option>
@@ -1153,6 +1162,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
               <option value="Not sure / खात्री नाही">Not sure / खात्री नाही</option>
@@ -1219,6 +1229,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Regular / नियमित">Regular / नियमित</option>
               <option value="Irregular / अनियमित">Irregular / अनियमित</option>
             </select>
@@ -1248,6 +1259,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Scanty / कमी">Scanty / कमी</option>
               <option value="Heavy / जास्त">Heavy / जास्त</option>
@@ -1278,6 +1290,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
@@ -1295,6 +1308,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1324,6 +1338,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
               <option value="Under Evaluation / तपासणी सुरू">Under Evaluation / तपासणी सुरू</option>
@@ -1340,6 +1355,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1355,6 +1371,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1379,6 +1396,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Vegetarian / शाकाहारी">Vegetarian / शाकाहारी</option>
               <option value="Non-Vegetarian / मांसाहारी">Non-Vegetarian / मांसाहारी</option>
               <option value="Vegan / व्हेगन">Vegan / व्हेगन</option>
@@ -1396,6 +1414,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Low / कमी">Low / कमी</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Good / चांगले">Good / चांगले</option>
@@ -1426,6 +1445,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="No / नाही">No / नाही</option>
               <option value="Yes / होय">Yes / होय</option>
             </select>
@@ -1441,6 +1461,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Normal / सामान्य">Normal / सामान्य</option>
               <option value="Low / कमी">Low / कमी</option>
               <option value="Increased / जास्त">Increased / जास्त</option>
@@ -1508,6 +1529,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Low / कमी">Low / कमी</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="High / जास्त">High / जास्त</option>
@@ -1761,6 +1783,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Severe / तीव्र">Severe / तीव्र</option>
@@ -1777,6 +1800,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Severe / तीव्र">Severe / तीव्र</option>
@@ -1793,6 +1817,7 @@ export const SkinHairCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-teal-500 focus:outline-none bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Normal / सामान्य">Normal / सामान्य</option>
               <option value="Reduced / कमी">Reduced / कमी</option>
               <option value="Markedly Reduced / खूप कमी">Markedly Reduced / खूप कमी</option>

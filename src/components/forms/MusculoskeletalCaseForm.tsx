@@ -109,72 +109,67 @@ const INITIAL_MSK_DATA: MusculoskeletalFormData = {
   mobile: '',
   address: '',
 
-  mainComplaint: ['Joint Pain', 'Joint Stiffness', 'Low Back Pain', 'Knee Pain'],
-  complaintDuration: '8 months',
-  complaintOnset: 'Gradual / हळूहळू',
-  complaintSeverity: 'Moderate / मध्यम',
+  mainComplaint: [],
+  complaintDuration: '',
+  complaintOnset: '',
+  complaintSeverity: '',
 
-  painCharacter: ['Aching', 'Stiffness', 'Heaviness'],
-  worseFrom: ['Movement', 'Cold', 'Stairs', 'Humidity'],
-  betterFrom: ['Rest', 'Warmth', 'Massage'],
+  painCharacter: [],
+  worseFrom: [],
+  betterFrom: [],
 
-  jointComplaints: ['Swelling', 'Stiffness', 'Cracking Sound', 'Restricted Movement'],
-  affectedJoint: 'Bilateral Knees & Lumbar Spine (L4-L5)',
-  jointType: 'Multiple Joints',
-  symmetrical: 'Yes',
+  jointComplaints: [],
+  affectedJoint: '',
+  jointType: '',
+  symmetrical: '',
 
-  spineComplaints: ['Low Back Pain', 'Spinal Stiffness', 'Morning Stiffness', 'Pain on Bending'],
-  spineRadiation: ['Hip', 'Thigh'],
-  knownSpineCondition: 'Lumbar Spondylosis with mild disc bulge',
-  spineDuration: '1 year',
-  previousSpineTreatment: 'Physiotherapy & NSAIDs with temporary relief',
+  spineComplaints: [],
+  spineRadiation: [],
+  knownSpineCondition: '',
+  spineDuration: '',
+  previousSpineTreatment: '',
 
-  spinalNeuro: ['Numbness', 'Tingling', 'Limb Heaviness'],
+  spinalNeuro: [],
   bladderBowel: [],
-  neuroDetails: 'Occasional tingling sensation down the right lateral thigh after prolonged sitting',
+  neuroDetails: '',
 
-  sciatica: ['Pain from Back to Leg', 'Pain to Buttock', 'Pain to Thigh', 'Tingling'],
-  sciaticaSide: 'Right / उजवी',
-  sciaticaDuration: '4 months',
-  sciaticaProgression: 'Intermittent',
+  sciatica: [],
+  sciaticaSide: '',
+  sciaticaDuration: '',
+  sciaticaProgression: '',
 
-  previousInjury: 'No',
+  previousInjury: '',
   injuryType: '',
   injuryDate: '',
   injuryDetails: '',
 
-  movementLimitation: [
-    'Difficulty Walking',
-    'Difficulty Climbing Stairs',
-    'Difficulty Sitting',
-    'Daily Activity Limitation'
-  ],
+  movementLimitation: [],
 
-  morningStiffness: 'Yes',
-  stiffnessDuration: '25-30 minutes',
-  stiffnessImprovesWith: 'Movement / हालचाल',
+  morningStiffness: '',
+  stiffnessDuration: '',
+  stiffnessImprovesWith: '',
 
-  muscleComplaints: ['Muscle Pain', 'Muscle Stiffness', 'Cramps'],
-  muscleDetails: 'Calf muscle cramps at night in bed',
+  muscleComplaints: [],
+  muscleDetails: '',
 
-  boneFootComplaints: ['Heel Pain'],
-  boneFootDetails: 'Mild morning heel soreness on taking the first few steps',
+  boneFootComplaints: [],
+  boneFootDetails: '',
 
-  previousDiagnosis: ['Osteoarthritis', 'Lumbar Spondylosis', 'Sciatica'],
-  previousDiagnosisDetails: 'Knee X-ray shows medial joint space reduction Grade II OA',
+  previousDiagnosis: [],
+  previousDiagnosisDetails: '',
 
-  investigations: ['X-Ray', 'MRI', 'Calcium', 'Vitamin D'],
-  investigationFindings: 'X-Ray Knee: Osteophytic lipping medial compartment. Serum Vit D: 18 ng/mL (Deficient).',
+  investigations: [],
+  investigationFindings: '',
 
   redFlags: [],
   urgentNotes: '',
 
-  diagnosis: 'Bilateral Knee Osteoarthritis (Grade II) & Lumbar Spondylosis with Rt Sciatalgia',
-  affectedRegion: 'Knee Joints & L4-S1 Lumbar Vertebrae',
-  clinicalSeverity: 'Moderate',
-  clinicalNotes: 'Rhus Toxicodendron totality: &lt; First motion, rest, cold damp weather; &gt; Continuous gentle motion, warmth.',
-  treatment: 'Rhus Toxicodendron 200C BD for 10 days, followed by Calcarea Fluorica 6X 4 tabs TDS',
-  advice: 'Quadriceps isometric exercises, avoid cross-legged sitting, warm mustard oil massage, Vit D3 60k weekly',
+  diagnosis: '',
+  affectedRegion: '',
+  clinicalSeverity: '',
+  clinicalNotes: '',
+  treatment: '',
+  advice: '',
   followup: ''
 };
 
@@ -231,15 +226,16 @@ export const MusculoskeletalCaseForm: React.FC = () => {
         }
       } catch (_) {}
 
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
+        ...INITIAL_MSK_DATA,
         patientName: selectedPatient.name,
         age: String(selectedPatient.age || ''),
         sex: selectedPatient.gender === 'Female' ? 'Female / स्त्री' : selectedPatient.gender === 'Male' ? 'Male / पुरुष' : 'Other',
         patientId: selectedPatient.id,
         mobile: selectedPatient.mobile || '',
-        address: selectedPatient.address || ''
-      }));
+        address: selectedPatient.address || '',
+        date: new Date().toISOString().split('T')[0]
+      });
     }
   }, [selectedPatient?.id, systemForms]);
 
@@ -553,6 +549,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Onset / सुरुवात निवडा</option>
               <option value="Sudden / अचानक">Sudden / अचानक</option>
               <option value="Gradual / हळूहळू">Gradual / हळूहळू</option>
               <option value="After Injury / दुखापतीनंतर">After Injury / दुखापतीनंतर</option>
@@ -567,6 +564,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / तीव्रता निवडा</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Severe / तीव्र">Severe / तीव्र</option>
@@ -706,6 +704,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="Single Joint">Single Joint</option>
                 <option value="Multiple Joints">Multiple Joints</option>
               </select>
@@ -718,6 +717,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
               </select>
@@ -847,6 +847,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
               onChange={handleChange}
               className="px-2 py-1 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Progression</option>
               <option value="Stable">Stable</option>
               <option value="Increasing">Increasing</option>
               <option value="Intermittent">Intermittent</option>
@@ -871,6 +872,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
@@ -935,6 +937,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
@@ -959,6 +962,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Select / निवडा</option>
               <option value="Movement / हालचाल">Movement / हालचाल</option>
               <option value="Rest / विश्रांती">Rest / विश्रांती</option>
               <option value="Warmth / उष्णता">Warmth / उष्णता</option>
@@ -1188,6 +1192,7 @@ export const MusculoskeletalCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / तीव्रता निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>

@@ -105,64 +105,64 @@ const INITIAL_GASTRO_DATA: GastroFormData = {
   mobile: '',
   address: '',
 
-  mainComplaint: ['Acidity', 'Heartburn', 'Bloating', 'Indigestion'],
-  complaintDuration: '4 months',
-  complaintFrequency: 'Daily after meals',
-  complaintSeverity: 'Moderate / मध्यम',
+  mainComplaint: [],
+  complaintDuration: '',
+  complaintFrequency: '',
+  complaintSeverity: '',
 
-  painSite: ['Epigastric / वरील मध्यभाग', 'Umbilical / नाभीजवळ'],
-  painCharacter: ['Burning / जळजळ', 'Pressure / दाबल्यासारखे'],
-  painOnset: 'Gradual / हळूहळू',
-  painDuration: '1-2 hours post meals',
-  painFrequency: 'Almost daily',
-  worseFrom: ['After Food', 'Spicy Food', 'Oily Food', 'Tea/Coffee', 'Lying Down'],
-  betterFrom: ['Passing Gas', 'Drinking warm water', 'Rest'],
+  painSite: [],
+  painCharacter: [],
+  painOnset: '',
+  painDuration: '',
+  painFrequency: '',
+  worseFrom: [],
+  betterFrom: [],
 
-  aciditySymptoms: ['Burning in Chest', 'Sour Belching', 'Acid Taste', 'After Meals', 'Night Symptoms'],
-  triggerFood: 'Spicy snacks, fermented foods, tea on empty stomach',
-  timeOfSymptoms: 'Late evening and 30 mins after dinner',
-  acidityRelief: 'Cold milk or warm sip of water',
+  aciditySymptoms: [],
+  triggerFood: '',
+  timeOfSymptoms: '',
+  acidityRelief: '',
 
-  nausea: 'Occasional / अधूनमधून',
-  vomiting: 'No',
+  nausea: '',
+  vomiting: '',
   vomitFrequency: '',
   vomitus: [],
   vomitSymptoms: '',
 
-  appetite: 'Variable / बदलती',
-  hungerTime: 'Irregular',
-  mealPattern: 'Irregular (late lunches)',
-  foodTriggers: ['Spicy / तिखट', 'Oily / तेलकट', 'Tea/Coffee / चहा-कॉफी', 'Sour / आंबट'],
-  foodDetails: 'Cannot tolerate heavy oily foods; triggers distress within an hour',
+  appetite: '',
+  hungerTime: '',
+  mealPattern: '',
+  foodTriggers: [],
+  foodDetails: '',
 
-  bowelFrequency: '1 time daily, occasionally constipated',
-  bowelRegularity: 'Irregular',
-  bowelUrgency: 'No',
-  stoolConsistency: ['Hard / कडक'],
-  constipationFeatures: ['Incomplete Stool / अपूर्ण शौच', 'Straining / जोर'],
+  bowelFrequency: '',
+  bowelRegularity: '',
+  bowelUrgency: '',
+  stoolConsistency: [],
+  constipationFeatures: [],
 
-  gasSymptoms: ['Gas', 'Bloating', 'Belching', 'Abdominal Fullness', 'Gas after Food'],
-  reliefAfterGas: 'Yes',
-  foodCausingGas: 'Pulses, potatoes, cabbage',
-  gasDuration: '2-3 hours after heavy meals',
+  gasSymptoms: [],
+  reliefAfterGas: '',
+  foodCausingGas: '',
+  gasDuration: '',
 
-  swallowingSymptoms: ['Reflux', 'Sour Fluid'],
-  associatedSymptoms: ['Fatigue / थकवा'],
+  swallowingSymptoms: [],
+  associatedSymptoms: [],
 
-  previousHistory: ['Gastritis', 'GERD'],
-  previousTreatment: 'Proton-pump inhibitors (pantoprazole) taken intermittently',
+  previousHistory: [],
+  previousTreatment: '',
 
-  investigations: ['CBC', 'USG Abdomen', 'LFT'],
-  investigationFindings: 'USG Abdomen: Mild fatty liver Grade I. Normal gall bladder and pancreas.',
+  investigations: [],
+  investigationFindings: '',
 
   redFlags: [],
 
-  diagnosis: 'Gastroesophageal Reflux Disease (GERD) & Functional Non-Ulcer Dyspepsia',
-  assessmentDuration: '4 months',
-  clinicalSeverity: 'Moderate',
-  clinicalNotes: 'Nux Vomica totality: sedentary IT lifestyle, irregular late meals, rich food aggravation, ineffectual urging for stool.',
-  treatment: 'Nux Vomica 200C at bedtime for 7 days, followed by Carbo Veg 30C for post-meal bloating',
-  advice: 'Do not lie down for 2 hours post meals, reduce tea to 1 cup/day, brisk walking after dinner',
+  diagnosis: '',
+  assessmentDuration: '',
+  clinicalSeverity: '',
+  clinicalNotes: '',
+  treatment: '',
+  advice: '',
   followup: ''
 };
 
@@ -219,15 +219,16 @@ export const GastroCaseForm: React.FC = () => {
         }
       } catch (_) {}
 
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
+        ...INITIAL_GASTRO_DATA,
         patientName: selectedPatient.name,
         age: String(selectedPatient.age || ''),
         sex: selectedPatient.gender === 'Female' ? 'Female / स्त्री' : selectedPatient.gender === 'Male' ? 'Male / पुरुष' : 'Other',
         patientId: selectedPatient.id,
         mobile: selectedPatient.mobile || '',
-        address: selectedPatient.address || ''
-      }));
+        address: selectedPatient.address || '',
+        date: new Date().toISOString().split('T')[0]
+      });
     }
   }, [selectedPatient?.id, systemForms]);
 
@@ -553,6 +554,7 @@ export const GastroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild / सौम्य">Mild / सौम्य</option>
               <option value="Moderate / मध्यम">Moderate / मध्यम</option>
               <option value="Severe / तीव्र">Severe / तीव्र</option>
@@ -723,6 +725,7 @@ export const GastroCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="None">None</option>
                 <option value="Occasional / अधूनमधून">Occasional / अधूनमधून</option>
                 <option value="Frequent / वारंवार">Frequent / वारंवार</option>
@@ -737,6 +740,7 @@ export const GastroCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1.5 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="No">No</option>
                 <option value="Yes">Yes</option>
               </select>
@@ -776,6 +780,7 @@ export const GastroCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="Normal / सामान्य">Normal</option>
                 <option value="Increased / वाढलेली">Increased</option>
                 <option value="Decreased / कमी">Decreased</option>
@@ -790,6 +795,7 @@ export const GastroCaseForm: React.FC = () => {
                 onChange={handleChange}
                 className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
               >
+                <option value="">Select / निवडा</option>
                 <option value="Regular">Regular</option>
                 <option value="Irregular">Irregular</option>
                 <option value="Frequent">Frequent</option>
@@ -848,6 +854,7 @@ export const GastroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="px-2 py-1.5 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Select Regularity / निवडा</option>
               <option value="Regular">Regular / नियमित</option>
               <option value="Irregular">Irregular / अनियमित</option>
             </select>
@@ -901,6 +908,7 @@ export const GastroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-2 py-1 border border-slate-300 rounded text-xs bg-white"
             >
+              <option value="">Relief after gas: Select / निवडा</option>
               <option value="Yes">Relief after passing gas: Yes</option>
               <option value="No">Relief after passing gas: No</option>
             </select>
@@ -1097,6 +1105,7 @@ export const GastroCaseForm: React.FC = () => {
               onChange={handleChange}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white"
             >
+              <option value="">Select Severity / निवडा</option>
               <option value="Mild">Mild / सौम्य</option>
               <option value="Moderate">Moderate / मध्यम</option>
               <option value="Severe">Severe / तीव्र</option>
