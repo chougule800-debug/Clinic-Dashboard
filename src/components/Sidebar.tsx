@@ -21,7 +21,9 @@ import {
   Wind,
   HeartHandshake,
   Baby,
-  ChevronRight
+  ChevronRight,
+  UserCheck,
+  Shield
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -34,7 +36,8 @@ export const Sidebar: React.FC<SidebarProps> = () => {
     setActiveTab,
     activeSystemFormKey,
     setActiveSystemFormKey,
-    conversations
+    conversations,
+    currentUser
   } = useClinic();
 
   const totalUnreadWhatsApp = conversations.reduce((acc, c) => acc + c.unreadCount, 0);
@@ -55,7 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = () => {
       badge: totalUnreadWhatsApp > 0 ? totalUnreadWhatsApp : undefined
     },
     { id: 'billing', label: 'Billing', icon: CreditCard },
-    { id: 'reports', label: 'Reports', icon: BarChart3 }
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'doctor_info', label: 'Doctor Info & Login', icon: UserCheck }
   ];
 
   const clinicalSystems: { key: ClinicalSystemKey; label: string; icon: any }[] = [
@@ -140,15 +144,30 @@ export const Sidebar: React.FC<SidebarProps> = () => {
         })}
       </div>
 
-      {/* Clinic & Firestore Cloud Footer */}
-      <div className="p-3.5 border-t border-slate-800 bg-slate-950/70 text-xs">
-        <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span>Firestore Connected: ananyainfotech</span>
+      {/* Active Doctor Profile & Cloud Footer */}
+      <div className="p-3.5 border-t border-slate-800 bg-slate-950/70 text-xs space-y-2">
+        <button
+          onClick={() => setActiveTab('doctor_info')}
+          className="w-full text-left p-2 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition-colors flex items-center gap-2.5"
+        >
+          <div className="w-8 h-8 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center font-bold text-xs shrink-0">
+            {currentUser?.name?.replace('Dr. ', '').charAt(0) || 'D'}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-bold text-white text-xs truncate">
+              {currentUser?.name || 'Dr. Bharat Chougule'}
+            </p>
+            <p className="text-[10px] text-teal-300 truncate">
+              {currentUser?.role === 'owner' ? 'Owner / Admin' : 'Logged-in Doctor'}
+            </p>
+          </div>
+          <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+        </button>
+
+        <div className="flex items-center gap-2 text-emerald-400 font-semibold text-[11px]">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Firestore: ananyainfotech</span>
         </div>
-        <p className="text-slate-400 text-xs leading-relaxed">
-          Dr. Bharat Chougule • Belgaum 591108
-        </p>
       </div>
     </aside>
   );

@@ -28,7 +28,11 @@ import {
   Baby,
   ArrowRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Heart,
+  Ruler,
+  Scale,
+  User
 } from 'lucide-react';
 
 export const CaseTakingView: React.FC = () => {
@@ -40,12 +44,71 @@ export const CaseTakingView: React.FC = () => {
     setActiveSystemFormKey,
     openWhatsAppShareDialog,
     openRemoteIntakeModal,
-    setActiveTab
+    setActiveTab,
+    updatePatientVitals
   } = useClinic();
 
   const currentSystemConfig =
     CLINICAL_SYSTEMS_METADATA.find(s => s.key === activeSystemFormKey) ||
     CLINICAL_SYSTEMS_METADATA[0];
+
+  // Vitals State - Numbers only, no scroll
+  const [patientAge, setPatientAge] = useState<string>('');
+  const [bpSys, setBpSys] = useState<string>('');
+  const [bpDia, setBpDia] = useState<string>('');
+  const [rbsVal, setRbsVal] = useState<string>('');
+  const [heightVal, setHeightVal] = useState<string>('');
+  const [weightVal, setWeightVal] = useState<string>('');
+  const [vitalsSavedNotice, setVitalsSavedNotice] = useState(false);
+
+  useEffect(() => {
+    if (selectedPatient) {
+      setPatientAge(selectedPatient.age ? String(selectedPatient.age) : '');
+      setBpSys(selectedPatient.vitals?.bpSystolic ? String(selectedPatient.vitals.bpSystolic) : '');
+      setBpDia(selectedPatient.vitals?.bpDiastolic ? String(selectedPatient.vitals.bpDiastolic) : '');
+      setRbsVal(selectedPatient.vitals?.rbs ? String(selectedPatient.vitals.rbs) : '');
+      setHeightVal(selectedPatient.vitals?.heightInches ? String(selectedPatient.vitals.heightInches) : '');
+      setWeightVal(selectedPatient.vitals?.weight ? String(selectedPatient.vitals.weight) : '');
+    }
+  }, [selectedPatient?.id, selectedPatient?.age, selectedPatient?.vitals?.bpSystolic, selectedPatient?.vitals?.bpDiastolic, selectedPatient?.vitals?.rbs, selectedPatient?.vitals?.heightInches, selectedPatient?.vitals?.weight]);
+
+  const handleVitalsChange = (
+    field: 'age' | 'bpSystolic' | 'bpDiastolic' | 'rbs' | 'heightInches' | 'weight',
+    rawVal: string
+  ) => {
+    // STRICT NUMBER VALIDATION: Strip any non-numeric characters
+    const numOnly = rawVal.replace(/[^0-9]/g, '');
+    if (!selectedPatient) return;
+
+    if (field === 'age') {
+      setPatientAge(numOnly);
+      updatePatientVitals(selectedPatient.id, {}, numOnly ? Number(numOnly) : undefined);
+    } else if (field === 'bpSystolic') {
+      setBpSys(numOnly);
+      updatePatientVitals(selectedPatient.id, { bpSystolic: numOnly ? Number(numOnly) : 120 });
+    } else if (field === 'bpDiastolic') {
+      setBpDia(numOnly);
+      updatePatientVitals(selectedPatient.id, { bpDiastolic: numOnly ? Number(numOnly) : 80 });
+    } else if (field === 'rbs') {
+      setRbsVal(numOnly);
+      updatePatientVitals(selectedPatient.id, { rbs: numOnly ? Number(numOnly) : undefined });
+    } else if (field === 'heightInches') {
+      setHeightVal(numOnly);
+      const hIn = numOnly ? Number(numOnly) : 0;
+      const wKg = weightVal ? Number(weightVal) : (selectedPatient.vitals?.weight || 0);
+      const bmi = hIn > 0 && wKg > 0 ? Number((wKg / Math.pow(hIn * 0.0254, 2)).toFixed(1)) : selectedPatient.vitals?.bmi;
+      updatePatientVitals(selectedPatient.id, { heightInches: hIn, bmi });
+    } else if (field === 'weight') {
+      setWeightVal(numOnly);
+      const wKg = numOnly ? Number(numOnly) : 0;
+      const hIn = heightVal ? Number(heightVal) : (selectedPatient.vitals?.heightInches || 0);
+      const bmi = hIn > 0 && wKg > 0 ? Number((wKg / Math.pow(hIn * 0.0254, 2)).toFixed(1)) : selectedPatient.vitals?.bmi;
+      updatePatientVitals(selectedPatient.id, { weight: wKg, bmi });
+    }
+
+    setVitalsSavedNotice(true);
+    setTimeout(() => setVitalsSavedNotice(false), 2000);
+  };
 
   // Find existing record for this patient & this system
   const existingRecord = selectedPatient
@@ -242,6 +305,162 @@ export const CaseTakingView: React.FC = () => {
         </div>
       </div>
 
+      {/* Quick Vitals & Demographics Bar (Age, BP, RBS, Height, Weight - Numbers Only, No Scroll) */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2.5 mb-3">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-rose-500" />
+            <span className="font-bold text-xs text-slate-900">
+              Patient Vitals & Measurements / रुग्णाची शारीरिक मापे
+            </span>
+            <span className="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+              Numbers Only • Direct Auto-Sync
+            </span>
+          </div>
+          <div className="flex items-center gap-2 text-[11px]">
+            {vitalsSavedNotice && (
+              <span className="text-emerald-700 font-semibold flex items-center gap-1 animate-pulse">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                Vitals updated & saved
+              </span>
+            )}
+            {selectedPatient?.vitals?.bmi && (
+              <span className="text-slate-500 font-medium">
+                BMI: <strong className="text-teal-700">{selectedPatient.vitals.bmi}</strong> kg/m²
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+          {/* Age */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <User className="w-3 h-3 text-indigo-500" />
+              Age (Years)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={patientAge}
+                onChange={(e) => handleVitalsChange('age', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="e.g. 42"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">Yrs</span>
+            </div>
+          </div>
+
+          {/* BP Systolic */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <Heart className="w-3 h-3 text-rose-500" />
+              BP (Systolic)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={bpSys}
+                onChange={(e) => handleVitalsChange('bpSystolic', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="120"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">mmHg</span>
+            </div>
+          </div>
+
+          {/* BP Diastolic */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <Heart className="w-3 h-3 text-rose-400" />
+              BP (Diastolic)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={bpDia}
+                onChange={(e) => handleVitalsChange('bpDiastolic', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="80"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">mmHg</span>
+            </div>
+          </div>
+
+          {/* RBS */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <Activity className="w-3 h-3 text-amber-500" />
+              RBS (Sugar)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={rbsVal}
+                onChange={(e) => handleVitalsChange('rbs', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="110"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">mg/dL</span>
+            </div>
+          </div>
+
+          {/* Height (inches) */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <Ruler className="w-3 h-3 text-teal-600" />
+              Height (inches)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={heightVal}
+                onChange={(e) => handleVitalsChange('heightInches', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="65"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">inch</span>
+            </div>
+          </div>
+
+          {/* Weight (kg) */}
+          <div>
+            <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+              <Scale className="w-3 h-3 text-emerald-600" />
+              Weight (Kg)
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={weightVal}
+                onChange={(e) => handleVitalsChange('weight', e.target.value)}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
+                placeholder="68"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+              <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">kg</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Main Form Content */}
       {activeSystemFormKey === 'skin_hair' ? (
         <SkinHairCaseForm />
@@ -296,10 +515,9 @@ export const CaseTakingView: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="md:col-span-2">
             <label className="block font-bold text-slate-800 mb-1">
-              Chief Complaints & Location *
+              Chief Complaints & Location
             </label>
             <textarea
-              required
               rows={2}
               value={chiefComplaints}
               onChange={(e) => setChiefComplaints(e.target.value)}

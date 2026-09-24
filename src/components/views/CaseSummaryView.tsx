@@ -185,35 +185,65 @@ export const CaseSummaryView: React.FC = () => {
           </div>
         </div>
 
-        {/* Patient Profile Demographics Box */}
-        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Patient Name</div>
-            <div className="font-bold text-slate-900 text-sm">{selectedPatient.name}</div>
-            <div className="text-slate-500 text-[11px]">{selectedPatient.age} yrs • {selectedPatient.gender}</div>
-          </div>
-
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Clinical Sugar</div>
-            <div className="font-bold text-slate-900 text-xs">RBS: {selectedPatient.vitals.rbs} mg/dL</div>
-            {selectedPatient.bloodGroup && (
-              <div className="text-slate-500 font-medium text-[11px]">{selectedPatient.bloodGroup} Blood Group</div>
-            )}
-          </div>
-
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Contact Details</div>
-            <div className="font-bold text-slate-800">{selectedPatient.mobile}</div>
-            <div className="text-slate-500 text-[11px] truncate max-w-[140px]">{selectedPatient.address}</div>
-          </div>
-
-          <div>
-            <div className="text-[10px] uppercase font-bold text-slate-400">Recorded Vitals</div>
-            <div className="font-bold text-slate-900">
-              BP: {selectedPatient.vitals.bpSystolic}/{selectedPatient.vitals.bpDiastolic} • P: {selectedPatient.vitals.pulse}
+        {/* Patient Profile Demographics & Comprehensive Vitals Box */}
+        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 border-b border-slate-200 pb-3">
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400">Patient Name</div>
+              <div className="font-bold text-slate-900 text-sm">{selectedPatient.name}</div>
+              <div className="text-slate-500 text-[11px]">ID: {selectedPatient.id} • {selectedPatient.gender}</div>
             </div>
-            <div className="text-slate-500 text-[11px]">
-              Sugar: {selectedPatient.vitals.rbs} mg/dL • Wt: {selectedPatient.vitals.weight}kg
+
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400">Contact & Address</div>
+              <div className="font-bold text-slate-800 text-xs">{selectedPatient.mobile}</div>
+              <div className="text-slate-500 text-[11px] truncate max-w-[200px]">{selectedPatient.address || 'Belgaum'}</div>
+            </div>
+
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400">ABHA & Health ID</div>
+              <div className="font-mono text-slate-800 text-xs">{selectedPatient.abhaId || '12-3456-7890-1234'}</div>
+              <div className="text-slate-500 text-[11px]">{selectedPatient.bloodGroup || 'O+'} Blood Group</div>
+            </div>
+          </div>
+
+          {/* Vitals Summary Row (Age, BP, RBS, Height, Weight, BMI) */}
+          <div>
+            <div className="text-[10px] uppercase font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+              <Activity className="w-3 h-3 text-rose-500" />
+              Recorded Clinical Vitals & Physical Measurements
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-xs">
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">Age / वय</span>
+                <span className="font-bold text-slate-900 text-sm">{selectedPatient.age || '—'}</span>
+                <span className="text-[10px] text-slate-500 ml-1">years</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">Blood Pressure</span>
+                <span className="font-bold text-slate-900 text-sm">{selectedPatient.vitals.bpSystolic}/{selectedPatient.vitals.bpDiastolic}</span>
+                <span className="text-[10px] text-slate-500 ml-1">mmHg</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">RBS (Sugar)</span>
+                <span className="font-bold text-slate-900 text-sm">{selectedPatient.vitals.rbs || '—'}</span>
+                <span className="text-[10px] text-slate-500 ml-1">mg/dL</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">Height</span>
+                <span className="font-bold text-slate-900 text-sm">{selectedPatient.vitals.heightInches || '—'}</span>
+                <span className="text-[10px] text-slate-500 ml-1">inches</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">Weight</span>
+                <span className="font-bold text-slate-900 text-sm">{selectedPatient.vitals.weight || '—'}</span>
+                <span className="text-[10px] text-slate-500 ml-1">kg</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-lg border border-slate-200">
+                <span className="text-[10px] text-slate-400 block font-medium">BMI</span>
+                <span className="font-bold text-teal-700 text-sm">{selectedPatient.vitals.bmi || '—'}</span>
+                <span className="text-[10px] text-slate-500 ml-1">kg/m²</span>
+              </div>
             </div>
           </div>
         </div>

@@ -505,7 +505,7 @@ export const MindGeneralsCaseForm: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
             <div>
               <label className="block font-semibold text-slate-700 mb-1">
-                Patient Name / रुग्णाचे नाव *
+                Patient Name / रुग्णाचे नाव
               </label>
               <input
                 type="text"
@@ -515,19 +515,23 @@ export const MindGeneralsCaseForm: React.FC = () => {
                 onChange={handleChange}
                 placeholder="Full Name"
                 className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-[#176b45] focus:outline-none bg-white"
-                required
               />
             </div>
             <div>
               <label className="block font-semibold text-slate-700 mb-1">Age / वय</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 id="age"
                 name="age"
                 value={formData.age}
-                onChange={handleChange}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9.]/g, '');
+                  handleChange({ target: { name: 'age', value: val } } as any);
+                }}
+                onWheel={(e) => (e.target as HTMLElement).blur()}
                 placeholder="Years"
-                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-[#176b45] focus:outline-none bg-white"
+                className="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-[#176b45] focus:outline-none bg-white [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
             <div>

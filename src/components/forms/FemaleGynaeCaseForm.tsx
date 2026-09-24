@@ -449,17 +449,21 @@ export const FemaleGynaeCaseForm: React.FC = () => {
               value={formData.patientName}
               onChange={handleChange}
               className="w-full border border-slate-300 rounded-lg p-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-500"
-              required
             />
           </div>
           <div className="space-y-1">
             <label className="font-bold text-slate-700">Age</label>
             <input
               name="age"
-              type="number"
+              type="text"
+              inputMode="numeric"
               value={formData.age}
-              onChange={handleChange}
-              className="w-full border border-slate-300 rounded-lg p-2 text-slate-900 focus:outline-none"
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.]/g, '');
+                handleChange({ target: { name: 'age', value: val } } as any);
+              }}
+              onWheel={(e) => (e.target as HTMLElement).blur()}
+              className="w-full border border-slate-300 rounded-lg p-2 text-slate-900 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
           </div>
           <div className="space-y-1">

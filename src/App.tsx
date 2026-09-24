@@ -20,6 +20,8 @@ import { FollowUpView } from './components/views/FollowUpView';
 import { BillingView } from './components/views/BillingView';
 import { ReportsView } from './components/views/ReportsView';
 import { WhatsAppInboxView } from './components/views/WhatsAppInboxView';
+import { DoctorProfileView } from './components/views/DoctorProfileView';
+import { LoginView } from './components/auth/LoginView';
 import { ClinicalSystemKey } from './types';
 
 interface PatientPortalState {
@@ -91,7 +93,8 @@ const MainLayout: React.FC = () => {
   const {
     activeTab,
     selectPatient,
-    setActiveSystemFormKey
+    setActiveSystemFormKey,
+    currentUser
   } = useClinic();
 
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
@@ -141,6 +144,11 @@ const MainLayout: React.FC = () => {
     );
   }
 
+  // If doctor is not logged in, render the secure Doctor Login screen
+  if (!currentUser) {
+    return <LoginView />;
+  }
+
   const renderActiveView = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -165,6 +173,8 @@ const MainLayout: React.FC = () => {
         return <ReportsView />;
       case 'whatsapp':
         return <WhatsAppInboxView />;
+      case 'doctor_info':
+        return <DoctorProfileView />;
       default:
         return <DashboardView onOpenNewPatient={() => setIsNewPatientModalOpen(true)} />;
     }

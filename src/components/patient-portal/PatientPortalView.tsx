@@ -324,10 +324,9 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
                   {/* Section 1: Chief Complaints */}
                   <div className="space-y-2">
                     <label className="block font-bold text-slate-800 text-sm">
-                      1. Main Complaints & Symptoms / मुख्य त्रास व लक्षणे *
+                      1. Main Complaints & Symptoms / मुख्य त्रास व लक्षणे
                     </label>
                     <textarea
-                      required
                       rows={3}
                       value={chiefComplaints}
                       onChange={(e) => setChiefComplaints(e.target.value)}

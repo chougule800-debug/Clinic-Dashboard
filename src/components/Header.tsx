@@ -12,7 +12,8 @@ import {
   CheckCircle2,
   Calendar,
   Cloud,
-  Loader2
+  Loader2,
+  UserCheck
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -27,7 +28,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
     conversations,
     resetDatabase,
     firestoreStatus,
-    syncAllToCloud
+    syncAllToCloud,
+    currentUser
   } = useClinic();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,23 +53,32 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
       )
     : [];
 
+  const activeDocName = currentUser?.name || CLINIC_CONFIG.doctorName;
+  const activeQual = currentUser?.qualifications || CLINIC_CONFIG.qualifications;
+  const activeReg = currentUser?.regNo || CLINIC_CONFIG.regNo;
+  const activeClinic = currentUser?.clinicName || CLINIC_CONFIG.appName;
+
   return (
     <header id="main-app-header" className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30">
       <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand & Doctor Credentials */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-10 h-10 rounded-xl bg-teal-500/20 border border-teal-500/30 flex items-center justify-center text-teal-400 shadow-inner">
+          <button
+            onClick={() => setActiveTab('doctor_info')}
+            className="w-10 h-10 rounded-xl bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/30 flex items-center justify-center text-teal-400 shadow-inner transition-colors"
+            title="View Doctor Profile & Multi-Doctor Management"
+          >
             <Stethoscope className="w-5 h-5" />
-          </div>
+          </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-bold text-xl tracking-tight text-white">{CLINIC_CONFIG.appName}</span>
+              <span className="font-bold text-lg sm:text-xl tracking-tight text-white">{activeClinic}</span>
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-950 text-teal-300 border border-teal-800">
                 Clinic & Case Taking
               </span>
             </div>
             <p className="text-xs text-slate-300 hidden md:block">
-              {CLINIC_CONFIG.doctorName}, {CLINIC_CONFIG.qualifications} • Reg. No. {CLINIC_CONFIG.regNo}
+              {activeDocName}, {activeQual} • Reg. No. {activeReg}
             </p>
           </div>
         </div>
@@ -181,6 +192,17 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
           >
             <UserPlus className="w-4 h-4" />
             <span className="hidden sm:inline">Register Patient</span>
+          </button>
+
+          {/* Doctor Info & Switch Account */}
+          <button
+            id="header-btn-doctor-info"
+            onClick={() => setActiveTab('doctor_info')}
+            title="Doctor Information, Credentials & Security"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-teal-300 hover:text-white transition-colors text-xs flex items-center gap-1.5 font-medium border border-slate-700/60"
+          >
+            <UserCheck className="w-4 h-4 text-teal-400" />
+            <span className="hidden xl:inline">{currentUser?.name?.split(' ')[1] || 'Doctor'}</span>
           </button>
 
           {/* Reset Demo Data Button */}

@@ -586,13 +586,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <label className="block font-medium text-slate-700 mb-1">Age (Years)</label>
                 <input
                   id="input-patient-age"
-                  type="number"
-                  min="0"
-                  max="125"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   placeholder="e.g. 25"
-                  value={age}
-                  onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
-                  className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                  value={age === '' ? '' : String(age)}
+                  onChange={(e) => {
+                    const clean = e.target.value.replace(/[^0-9]/g, '');
+                    setAge(clean === '' ? '' : Number(clean));
+                  }}
+                  onWheel={(e) => (e.target as HTMLElement).blur()}
+                  className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                     highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                   }`}
                 />
@@ -661,12 +665,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <div className="relative">
                   <input
                     id="input-bp-systolic"
-                    type="number"
-                    min="60"
-                    max="260"
-                    value={bpSystolic}
-                    onChange={(e) => setBpSystolic(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={bpSystolic ? String(bpSystolic) : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^0-9]/g, '');
+                      setBpSystolic(clean ? Number(clean) : 0);
+                    }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
+                    placeholder="120"
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
@@ -683,12 +692,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <div className="relative">
                   <input
                     id="input-bp-diastolic"
-                    type="number"
-                    min="40"
-                    max="160"
-                    value={bpDiastolic}
-                    onChange={(e) => setBpDiastolic(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={bpDiastolic ? String(bpDiastolic) : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^0-9]/g, '');
+                      setBpDiastolic(clean ? Number(clean) : 0);
+                    }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
+                    placeholder="80"
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
@@ -705,12 +719,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <div className="relative">
                   <input
                     id="input-rbs"
-                    type="number"
-                    min="40"
-                    max="600"
-                    value={rbs}
-                    onChange={(e) => setRbs(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={rbs ? String(rbs) : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^0-9]/g, '');
+                      setRbs(clean ? Number(clean) : 0);
+                    }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
+                    placeholder="110"
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
@@ -727,12 +746,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <div className="relative">
                   <input
                     id="input-height-inches"
-                    type="number"
-                    min="20"
-                    max="96"
-                    value={heightInches}
-                    onChange={(e) => setHeightInches(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={heightInches ? String(heightInches) : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^0-9]/g, '');
+                      setHeightInches(clean ? Number(clean) : 0);
+                    }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
+                    placeholder="65"
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
@@ -749,12 +773,17 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <div className="relative">
                   <input
                     id="input-weight-kg"
-                    type="number"
-                    min="2"
-                    max="250"
-                    value={weight}
-                    onChange={(e) => setWeight(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    value={weight ? String(weight) : ''}
+                    onChange={(e) => {
+                      const clean = e.target.value.replace(/[^0-9]/g, '');
+                      setWeight(clean ? Number(clean) : 0);
+                    }}
+                    onWheel={(e) => (e.target as HTMLElement).blur()}
+                    placeholder="68"
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />

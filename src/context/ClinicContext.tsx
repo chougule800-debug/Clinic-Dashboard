@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   Patient,
+  PatientVitals,
   SystemFormRecord,
   Prescription,
   FollowUpRecord,
@@ -10,7 +11,8 @@ import {
   ClinicalSystemKey,
   WhatsAppMessage,
   WhatsAppShareDialogData,
-  WhatsAppShareType
+  WhatsAppShareType,
+  DoctorUser
 } from '../types';
 import {
   INITIAL_PATIENTS,
@@ -22,6 +24,7 @@ import {
   INITIAL_INVOICES
 } from '../data/mockData';
 import { CLINIC_CONFIG } from '../config/clinicConfig';
+import { INITIAL_DOCTORS } from '../config/doctorsConfig';
 import {
   syncPatientToFirestore,
   syncSystemFormToFirestore,
@@ -106,6 +109,19 @@ interface ClinicContextType {
 
   // Billing
   saveInvoice: (invoice: Omit<BillingInvoice, 'id'>) => BillingInvoice;
+
+  // Auth & Multi-Doctor
+  currentUser: DoctorUser | null;
+  doctorUsers: DoctorUser[];
+  login: (email: string, pass: string) => { success: boolean; error?: string };
+  logout: () => void;
+  updateDoctorProfile: (updates: Partial<DoctorUser>) => void;
+  createDoctorUser: (doctorData: Omit<DoctorUser, 'id' | 'createdAt'>) => { success: boolean; error?: string };
+  deleteDoctorUser: (id: string) => void;
+  resetDoctorPassword: (id: string, newPass: string) => void;
+
+  // Quick Vitals update (Numbers only, direct sync)
+  updatePatientVitals: (patientId: string, vitals: Partial<PatientVitals>, newAge?: number) => void;
   
   // Reset
   resetDatabase: () => void;
@@ -116,13 +132,54 @@ const ClinicContext = createContext<ClinicContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY = 'clinicapro_master_data_v1';
 
 export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Load from localStorage or seed
+  // Multi-Doctor Authentication & Users
+  const [doctorUsers, setDoctorUsers] = useState<DoctorUser[]>(() => {
+    try {
+      const stored = localStorage.getItem('ayush_doctor_users');
+      return stored ? JSON.parse(stored) : INITIAL_DOCTORS;
+    } catch {
+      return INITIAL_DOCTORS;
+    }
+  });
+
+  const [currentUser, setCurrentUser] = useState<DoctorUser | null>(() => {
+    try {
+      const stored = localStorage.getItem('ayush_current_user');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed;
+      }
+      return INITIAL_DOCTORS[0]; // Dr. Bharat Chougule as initial owner
+    } catch {
+      return INITIAL_DOCTORS[0];
+    }
+  });
+
+  // Sync CLINIC_CONFIG with the active logged-in doctor
+  useEffect(() => {
+    if (currentUser) {
+      CLINIC_CONFIG.appName = currentUser.clinicName || CLINIC_CONFIG.appName;
+      CLINIC_CONFIG.doctorName = currentUser.name || CLINIC_CONFIG.doctorName;
+      CLINIC_CONFIG.qualifications = currentUser.qualifications || CLINIC_CONFIG.qualifications;
+      CLINIC_CONFIG.regNo = currentUser.regNo || CLINIC_CONFIG.regNo;
+      CLINIC_CONFIG.address = currentUser.address || CLINIC_CONFIG.address;
+      CLINIC_CONFIG.city = currentUser.city || CLINIC_CONFIG.city;
+      CLINIC_CONFIG.pinCode = currentUser.pinCode || CLINIC_CONFIG.pinCode;
+      CLINIC_CONFIG.phone = currentUser.phone || CLINIC_CONFIG.phone;
+      CLINIC_CONFIG.email = currentUser.email || CLINIC_CONFIG.email;
+    }
+  }, [currentUser]);
+
+  // Load doctor-isolated data or default
+  const activeDocId = currentUser?.id || 'doc_bharat';
+
   const [patients, setPatients] = useState<Patient[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_patients`);
-      return stored ? JSON.parse(stored) : INITIAL_PATIENTS;
+      const docKey = `ayush_${activeDocId}_patients`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_patients`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_PATIENTS : []);
     } catch {
-      return INITIAL_PATIENTS;
+      return activeDocId === 'doc_bharat' ? INITIAL_PATIENTS : [];
     }
   });
 
@@ -132,7 +189,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [systemForms, setSystemForms] = useState<SystemFormRecord[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_system_forms`);
+      const docKey = `ayush_${activeDocId}_system_forms`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_system_forms`) : null);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
@@ -146,54 +204,59 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           );
         }
       }
-      return INITIAL_SYSTEM_FORMS;
+      return activeDocId === 'doc_bharat' ? INITIAL_SYSTEM_FORMS : [];
     } catch {
-      return INITIAL_SYSTEM_FORMS;
+      return activeDocId === 'doc_bharat' ? INITIAL_SYSTEM_FORMS : [];
     }
   });
 
   const [prescriptions, setPrescriptions] = useState<Prescription[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_prescriptions`);
-      return stored ? JSON.parse(stored) : INITIAL_PRESCRIPTIONS;
+      const docKey = `ayush_${activeDocId}_prescriptions`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_prescriptions`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_PRESCRIPTIONS : []);
     } catch {
-      return INITIAL_PRESCRIPTIONS;
+      return activeDocId === 'doc_bharat' ? INITIAL_PRESCRIPTIONS : [];
     }
   });
 
   const [followUps, setFollowUps] = useState<FollowUpRecord[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_follow_ups`);
-      return stored ? JSON.parse(stored) : INITIAL_FOLLOW_UPS;
+      const docKey = `ayush_${activeDocId}_follow_ups`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_follow_ups`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_FOLLOW_UPS : []);
     } catch {
-      return INITIAL_FOLLOW_UPS;
+      return activeDocId === 'doc_bharat' ? INITIAL_FOLLOW_UPS : [];
     }
   });
 
   const [appointments, setAppointments] = useState<Appointment[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_appointments`);
-      return stored ? JSON.parse(stored) : INITIAL_APPOINTMENTS;
+      const docKey = `ayush_${activeDocId}_appointments`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_appointments`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_APPOINTMENTS : []);
     } catch {
-      return INITIAL_APPOINTMENTS;
+      return activeDocId === 'doc_bharat' ? INITIAL_APPOINTMENTS : [];
     }
   });
 
   const [conversations, setConversations] = useState<WhatsAppConversation[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_conversations`);
-      return stored ? JSON.parse(stored) : INITIAL_CONVERSATIONS;
+      const docKey = `ayush_${activeDocId}_conversations`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_conversations`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_CONVERSATIONS : []);
     } catch {
-      return INITIAL_CONVERSATIONS;
+      return activeDocId === 'doc_bharat' ? INITIAL_CONVERSATIONS : [];
     }
   });
 
   const [invoices, setInvoices] = useState<BillingInvoice[]>(() => {
     try {
-      const stored = localStorage.getItem(`${LOCAL_STORAGE_KEY}_invoices`);
-      return stored ? JSON.parse(stored) : INITIAL_INVOICES;
+      const docKey = `ayush_${activeDocId}_invoices`;
+      const stored = localStorage.getItem(docKey) || (activeDocId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_invoices`) : null);
+      return stored ? JSON.parse(stored) : (activeDocId === 'doc_bharat' ? INITIAL_INVOICES : []);
     } catch {
-      return INITIAL_INVOICES;
+      return activeDocId === 'doc_bharat' ? INITIAL_INVOICES : [];
     }
   });
 
@@ -270,62 +333,214 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [whatsAppShareDialog, setWhatsAppShareDialog] = useState<WhatsAppShareDialogData | null>(null);
 
-  // Sync to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_patients`, JSON.stringify(patients));
-    } catch (e) {
-      console.warn('LocalStorage error:', e);
-    }
-  }, [patients]);
+  // Sync to doctor-scoped localStorage
+  const currentDocId = currentUser?.id || 'doc_bharat';
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_system_forms`, JSON.stringify(systemForms));
+      localStorage.setItem(`ayush_${currentDocId}_patients`, JSON.stringify(patients));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_patients`, JSON.stringify(patients));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [systemForms]);
+  }, [patients, currentDocId]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_prescriptions`, JSON.stringify(prescriptions));
+      localStorage.setItem(`ayush_${currentDocId}_system_forms`, JSON.stringify(systemForms));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_system_forms`, JSON.stringify(systemForms));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [prescriptions]);
+  }, [systemForms, currentDocId]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_follow_ups`, JSON.stringify(followUps));
+      localStorage.setItem(`ayush_${currentDocId}_prescriptions`, JSON.stringify(prescriptions));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_prescriptions`, JSON.stringify(prescriptions));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [followUps]);
+  }, [prescriptions, currentDocId]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_appointments`, JSON.stringify(appointments));
+      localStorage.setItem(`ayush_${currentDocId}_follow_ups`, JSON.stringify(followUps));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_follow_ups`, JSON.stringify(followUps));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [appointments]);
+  }, [followUps, currentDocId]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_conversations`, JSON.stringify(conversations));
+      localStorage.setItem(`ayush_${currentDocId}_appointments`, JSON.stringify(appointments));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_appointments`, JSON.stringify(appointments));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [conversations]);
+  }, [appointments, currentDocId]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(`${LOCAL_STORAGE_KEY}_invoices`, JSON.stringify(invoices));
+      localStorage.setItem(`ayush_${currentDocId}_conversations`, JSON.stringify(conversations));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_conversations`, JSON.stringify(conversations));
+      }
     } catch (e) {
       console.warn('LocalStorage error:', e);
     }
-  }, [invoices]);
+  }, [conversations, currentDocId]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(`ayush_${currentDocId}_invoices`, JSON.stringify(invoices));
+      if (currentDocId === 'doc_bharat') {
+        localStorage.setItem(`${LOCAL_STORAGE_KEY}_invoices`, JSON.stringify(invoices));
+      }
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+  }, [invoices, currentDocId]);
+
+  // Method to load doctor-specific workspace
+  const loadDoctorData = (doctor: DoctorUser) => {
+    const docId = doctor.id;
+    try {
+      const storedPatients = localStorage.getItem(`ayush_${docId}_patients`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_patients`) : null);
+      const docPatients = storedPatients ? JSON.parse(storedPatients) : (docId === 'doc_bharat' ? INITIAL_PATIENTS : []);
+      setPatients(docPatients);
+      setSelectedPatientId(docPatients.length > 0 ? docPatients[0].id : null);
+
+      const storedForms = localStorage.getItem(`ayush_${docId}_system_forms`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_system_forms`) : null);
+      setSystemForms(storedForms ? JSON.parse(storedForms) : (docId === 'doc_bharat' ? INITIAL_SYSTEM_FORMS : []));
+
+      const storedRx = localStorage.getItem(`ayush_${docId}_prescriptions`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_prescriptions`) : null);
+      setPrescriptions(storedRx ? JSON.parse(storedRx) : (docId === 'doc_bharat' ? INITIAL_PRESCRIPTIONS : []));
+
+      const storedInv = localStorage.getItem(`ayush_${docId}_invoices`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_invoices`) : null);
+      setInvoices(storedInv ? JSON.parse(storedInv) : (docId === 'doc_bharat' ? INITIAL_INVOICES : []));
+
+      const storedApt = localStorage.getItem(`ayush_${docId}_appointments`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_appointments`) : null);
+      setAppointments(storedApt ? JSON.parse(storedApt) : (docId === 'doc_bharat' ? INITIAL_APPOINTMENTS : []));
+
+      const storedConv = localStorage.getItem(`ayush_${docId}_conversations`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_conversations`) : null);
+      setConversations(storedConv ? JSON.parse(storedConv) : (docId === 'doc_bharat' ? INITIAL_CONVERSATIONS : []));
+
+      const storedFU = localStorage.getItem(`ayush_${docId}_follow_ups`) ||
+        (docId === 'doc_bharat' ? localStorage.getItem(`${LOCAL_STORAGE_KEY}_follow_ups`) : null);
+      setFollowUps(storedFU ? JSON.parse(storedFU) : (docId === 'doc_bharat' ? INITIAL_FOLLOW_UPS : []));
+    } catch (err) {
+      console.warn('Error loading doctor isolated data:', err);
+    }
+  };
+
+  const login = (email: string, pass: string): { success: boolean; error?: string } => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const found = doctorUsers.find(
+      d => d.email.toLowerCase() === trimmedEmail && d.password === pass
+    );
+
+    if (!found) {
+      return {
+        success: false,
+        error: 'Invalid Login ID or Password. Please check credentials or contact Dr. Bharat Chougule (9902686173).'
+      };
+    }
+
+    setCurrentUser(found);
+    localStorage.setItem('ayush_current_user', JSON.stringify(found));
+    loadDoctorData(found);
+    return { success: true };
+  };
+
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('ayush_current_user');
+  };
+
+  const updateDoctorProfile = (updates: Partial<DoctorUser>) => {
+    if (!currentUser) return;
+    const updated = { ...currentUser, ...updates };
+    setCurrentUser(updated);
+    localStorage.setItem('ayush_current_user', JSON.stringify(updated));
+
+    setDoctorUsers(prev => {
+      const list = prev.map(d => (d.id === updated.id ? updated : d));
+      localStorage.setItem('ayush_doctor_users', JSON.stringify(list));
+      return list;
+    });
+  };
+
+  const createDoctorUser = (docData: Omit<DoctorUser, 'id' | 'createdAt'>) => {
+    const existing = doctorUsers.find(
+      d => d.email.toLowerCase() === docData.email.trim().toLowerCase()
+    );
+    if (existing) {
+      return { success: false, error: 'A doctor with this Login ID/Email already exists.' };
+    }
+    const newDoc: DoctorUser = {
+      ...docData,
+      id: `doc_${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    const updatedList = [...doctorUsers, newDoc];
+    setDoctorUsers(updatedList);
+    localStorage.setItem('ayush_doctor_users', JSON.stringify(updatedList));
+    return { success: true };
+  };
+
+  const deleteDoctorUser = (id: string) => {
+    if (id === 'doc_bharat') return; // Cannot delete owner
+    const updatedList = doctorUsers.filter(d => d.id !== id);
+    setDoctorUsers(updatedList);
+    localStorage.setItem('ayush_doctor_users', JSON.stringify(updatedList));
+  };
+
+  const resetDoctorPassword = (id: string, newPass: string) => {
+    const updatedList = doctorUsers.map(d => (d.id === id ? { ...d, password: newPass } : d));
+    setDoctorUsers(updatedList);
+    localStorage.setItem('ayush_doctor_users', JSON.stringify(updatedList));
+    if (currentUser?.id === id) {
+      const updatedCurr = { ...currentUser, password: newPass };
+      setCurrentUser(updatedCurr);
+      localStorage.setItem('ayush_current_user', JSON.stringify(updatedCurr));
+    }
+  };
+
+  const updatePatientVitals = (patientId: string, vitalsUpdates: Partial<PatientVitals>, newAge?: number) => {
+    setPatients(prev =>
+      prev.map(p => {
+        if (p.id !== patientId) return p;
+        const updatedVitals: PatientVitals = {
+          ...p.vitals,
+          ...vitalsUpdates
+        };
+        return {
+          ...p,
+          age: typeof newAge === 'number' && !isNaN(newAge) ? newAge : p.age,
+          vitals: updatedVitals,
+          updatedAt: new Date().toISOString()
+        };
+      })
+    );
+  };
 
   const selectedPatient = patients.find(p => p.id === selectedPatientId) || patients[0];
 
@@ -782,6 +997,15 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         generateWhatsAppBillingLink,
         submitRemoteIntake,
         saveInvoice,
+        currentUser,
+        doctorUsers,
+        login,
+        logout,
+        updateDoctorProfile,
+        createDoctorUser,
+        deleteDoctorUser,
+        resetDoctorPassword,
+        updatePatientVitals,
         resetDatabase
       }}
     >

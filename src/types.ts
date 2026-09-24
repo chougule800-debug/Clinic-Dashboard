@@ -9,6 +9,7 @@ export interface PatientVitals {
   weight: number; // kg
   height: number; // inch
   heightInch?: number;
+  heightInches?: number;
   bmi?: number;
   rbs: number; // mg/dL
   respiratoryRate?: number;
@@ -214,3 +215,22 @@ export interface BillingInvoice {
   paymentMode: 'UPI' | 'Cash' | 'Card' | 'Pending';
   status: 'Paid' | 'Unpaid' | 'Partial';
 }
+
+export interface DoctorUser {
+  id: string;
+  email: string;
+  password?: string;
+  name: string;
+  qualifications: string;
+  regNo: string;
+  speciality: string;
+  clinicName: string;
+  address: string;
+  city: string;
+  pinCode: string;
+  phone: string;
+  role: 'owner' | 'doctor';
+  createdAt: string;
+  consultationFee?: number;
+}
+
