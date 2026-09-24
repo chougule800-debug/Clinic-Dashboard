@@ -2,23 +2,6 @@ import React, { useState } from 'react';
 import { useClinic } from '../../context/ClinicContext';
 import { CLINIC_CONFIG } from '../../config/clinicConfig';
 import { BillingInvoice } from '../../types';
-
-export interface BillItem {
-  id: string;
-  description: string;
-  amount: number;
-}
-
-export interface ClinicBill {
-  id: string;
-  patientId: string;
-  patientName: string;
-  date: string;
-  items: BillItem[];
-  paymentMode: 'UPI' | 'Cash' | 'Card';
-  paymentStatus: 'Paid' | 'Unpaid';
-  discount: number;
-}
 import {
   CreditCard,
   Plus,
@@ -29,53 +12,42 @@ import {
   Receipt,
   User,
   ShieldCheck,
-  QrCode
+  QrCode,
+  Filter
 } from 'lucide-react';
 
+export interface BillItemForm {
+  id: string;
+  description: string;
+  amount: number;
+}
+
 export const BillingView: React.FC = () => {
-  const { selectedPatient, patients } = useClinic();
+  const { selectedPatient, patients, invoices, saveInvoice } = useClinic();
 
-  const [bills, setBills] = useState<ClinicBill[]>([
-    {
-      id: 'INV-2026-001',
-      patientId: selectedPatient?.id || 'PT-1001',
-      patientName: selectedPatient?.name || 'Rahul Sharma',
-      date: '2026-03-16',
-      items: [
-        { id: '1', description: 'Consultation & System-wise Case Taking Fee', amount: 800 },
-        { id: '2', description: 'Homeopathic Medicine (15 Days Dispensing)', amount: 450 },
-        { id: '3', description: 'Computerized Repertorisation Analysis', amount: 250 }
-      ],
-      paymentMode: 'UPI',
-      paymentStatus: 'Paid',
-      discount: 0
-    },
-    {
-      id: 'INV-2026-002',
-      patientId: 'PT-1002',
-      patientName: 'Sunita Patel',
-      date: '2026-03-15',
-      items: [
-        { id: '1', description: 'Consultation Fee (Follow-up)', amount: 500 },
-        { id: '2', description: 'Homeopathic Medicine (1 Month)', amount: 700 }
-      ],
-      paymentMode: 'Cash',
-      paymentStatus: 'Paid',
-      discount: 100
-    }
-  ]);
-
-  const [activeInvoice, setActiveInvoice] = useState<ClinicBill>(bills[0]);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [filterPatientOnly, setFilterPatientOnly] = useState(false);
   const [showNewInvoice, setShowNewInvoice] = useState(false);
 
-  // New Invoice form
+  // Filtered invoices
+  const displayedInvoices = filterPatientOnly && selectedPatient
+    ? invoices.filter(inv => inv.patientId === selectedPatient.id)
+    : invoices;
+
+  // Active invoice resolution
+  const activeInvoice: BillingInvoice | undefined =
+    invoices.find(inv => inv.id === selectedInvoiceId) ||
+    (selectedPatient ? invoices.find(inv => inv.patientId === selectedPatient.id) : undefined) ||
+    invoices[0];
+
+  // New Invoice form state
   const [newPatientId, setNewPatientId] = useState(selectedPatient?.id || patients[0]?.id || '');
-  const [newItems, setNewItems] = useState<BillItem[]>([
-    { id: '1', description: 'Doctor Consultation Fee', amount: 600 },
-    { id: '2', description: 'Homeopathic Medicines (15 Days)', amount: 400 }
+  const [newItems, setNewItems] = useState<BillItemForm[]>([
+    { id: '1', description: 'Doctor Consultation & Case Taking Fee', amount: 600 },
+    { id: '2', description: 'Homeopathic Medicines (15 Days Dispensing)', amount: 400 }
   ]);
   const [newDiscount, setNewDiscount] = useState(0);
-  const [newMode, setNewMode] = useState<'Cash' | 'UPI' | 'Card'>('UPI');
+  const [newMode, setNewMode] = useState<'Cash' | 'UPI' | 'Card'>('Cash');
 
   const addItemRow = () => {
     setNewItems([
@@ -90,26 +62,31 @@ export const BillingView: React.FC = () => {
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
-    const pt = patients.find(p => p.id === newPatientId);
+    const pt = patients.find(p => p.id === newPatientId) || selectedPatient || patients[0];
     if (!pt) return;
 
-    const newBill = {
-      id: `INV-2026-${String(bills.length + 1).padStart(3, '0')}`,
+    const subtotal = newItems.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
+    const finalTotal = Math.max(0, subtotal - newDiscount);
+
+    const created = saveInvoice({
+      invoiceNumber: `CP-INV-${1080 + invoices.length + 1}`,
       patientId: pt.id,
       patientName: pt.name,
       date: new Date().toISOString().split('T')[0],
-      items: newItems,
+      items: newItems.map(it => ({ description: it.description, amount: Number(it.amount) || 0 })),
+      consultationFee: Math.round(finalTotal * 0.6),
+      medicineCharges: Math.round(finalTotal * 0.4),
+      discount: newDiscount,
+      totalAmount: finalTotal,
       paymentMode: newMode,
-      paymentStatus: 'Paid' as const,
-      discount: newDiscount
-    };
+      status: 'Paid'
+    });
 
-    setBills([newBill, ...bills]);
-    setActiveInvoice(newBill);
+    setSelectedInvoiceId(created.id);
     setShowNewInvoice(false);
   };
 
-  const calcSubtotal = (items: BillItem[]) =>
+  const calcSubtotal = (items: { amount: number }[]) =>
     items.reduce((acc, item) => acc + (Number(item.amount) || 0), 0);
 
   return (
@@ -126,13 +103,29 @@ export const BillingView: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowNewInvoice(true)}
-          className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-2 shadow-xs shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          <span>+ Create New Invoice</span>
-        </button>
+        <div className="flex items-center gap-2.5">
+          {selectedPatient && (
+            <button
+              onClick={() => setFilterPatientOnly(!filterPatientOnly)}
+              className={`px-3 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1.5 ${
+                filterPatientOnly
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                  : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5" />
+              <span>{filterPatientOnly ? `Only ${selectedPatient.name.split(' ')[0]}` : 'All Patients'}</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setShowNewInvoice(true)}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-2 shadow-xs shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Create New Invoice</span>
+          </button>
+        </div>
       </div>
 
       {/* New Invoice Form */}
@@ -143,7 +136,7 @@ export const BillingView: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowNewInvoice(false)}
-              className="text-slate-400 hover:text-slate-600"
+              className="text-slate-400 hover:text-slate-600 font-bold"
             >
               ✕
             </button>
@@ -170,8 +163,8 @@ export const BillingView: React.FC = () => {
                 onChange={(e) => setNewMode(e.target.value as any)}
                 className="w-full border border-slate-300 rounded-lg p-2 text-xs text-slate-900 focus:outline-none"
               >
-                <option value="UPI">UPI / GPay / PhonePe</option>
                 <option value="Cash">Cash</option>
+                <option value="UPI">UPI / GPay / PhonePe</option>
                 <option value="Card">Debit / Credit Card</option>
               </select>
             </div>
@@ -180,6 +173,7 @@ export const BillingView: React.FC = () => {
               <label className="block font-medium text-slate-700 mb-1">Discount (₹)</label>
               <input
                 type="number"
+                min="0"
                 value={newDiscount}
                 onChange={(e) => setNewDiscount(Number(e.target.value))}
                 className="w-full border border-slate-300 rounded-lg p-2 text-xs text-slate-900 focus:outline-none"
@@ -257,41 +251,61 @@ export const BillingView: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left 4 Cols: History */}
         <div className="lg:col-span-4 space-y-3">
-          <h3 className="font-bold text-slate-900 text-sm">Recent Invoices</h3>
-          <div className="space-y-2">
-            {bills.map((b) => {
-              const isSelected = activeInvoice?.id === b.id;
-              const total = calcSubtotal(b.items) - b.discount;
-
-              return (
-                <button
-                  key={b.id}
-                  onClick={() => setActiveInvoice(b)}
-                  className={`w-full text-left p-3.5 rounded-2xl border text-xs transition-all ${
-                    isSelected
-                      ? 'bg-emerald-50 border-emerald-300 shadow-xs'
-                      : 'bg-white border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-bold text-slate-900">{b.patientName}</span>
-                    <span className="font-bold text-emerald-800">₹{total}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span>{b.id} • {b.date}</span>
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
-                      {b.paymentMode} ({b.paymentStatus})
-                    </span>
-                  </div>
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-slate-900 text-sm">
+              Recent Invoices ({displayedInvoices.length})
+            </h3>
+            {filterPatientOnly && (
+              <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
+                Filtered
+              </span>
+            )}
           </div>
+
+          {displayedInvoices.length === 0 ? (
+            <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center space-y-2">
+              <Receipt className="w-8 h-8 text-slate-300 mx-auto" />
+              <p className="text-xs font-semibold text-slate-700">No invoices found</p>
+              <p className="text-[11px] text-slate-500">
+                Invoices generated at registration or billing will show here.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[700px] overflow-y-auto pr-1">
+              {displayedInvoices.map((b) => {
+                const isSelected = activeInvoice?.id === b.id;
+                const total = b.totalAmount !== undefined ? b.totalAmount : (calcSubtotal(b.items) - b.discount);
+
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => setSelectedInvoiceId(b.id)}
+                    className={`w-full text-left p-3.5 rounded-2xl border text-xs transition-all ${
+                      isSelected
+                        ? 'bg-emerald-50 border-emerald-300 shadow-xs'
+                        : 'bg-white border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold text-slate-900">{b.patientName}</span>
+                      <span className="font-bold text-emerald-800">₹{total}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px] text-slate-500">
+                      <span>{b.invoiceNumber || b.id} • {b.date}</span>
+                      <span className="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-medium">
+                        {b.paymentMode} ({b.status})
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Right 8 Cols: Printable Bill Sheet */}
         <div className="lg:col-span-8">
-          {activeInvoice && (
+          {activeInvoice ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-xs space-y-6 text-xs text-slate-800">
               <div className="flex justify-between items-start border-b border-slate-200 pb-4">
                 <div>
@@ -307,11 +321,11 @@ export const BillingView: React.FC = () => {
                 </div>
 
                 <div className="text-right">
-                  <div className="font-bold text-slate-900 text-sm">{activeInvoice.id}</div>
+                  <div className="font-bold text-slate-900 text-sm">{activeInvoice.invoiceNumber || activeInvoice.id}</div>
                   <div className="text-[11px] text-slate-500">Date: {activeInvoice.date}</div>
                   <button
                     onClick={() => window.print()}
-                    className="mt-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center gap-1 ml-auto"
+                    className="mt-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center gap-1 ml-auto hover:bg-slate-800 transition-colors"
                   >
                     <Printer className="w-3.5 h-3.5" /> Print Receipt
                   </button>
@@ -319,7 +333,7 @@ export const BillingView: React.FC = () => {
               </div>
 
               {/* Patient info */}
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between">
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex justify-between">
                 <div>
                   <span className="text-slate-400 text-[10px] uppercase block">Billed To:</span>
                   <strong className="text-slate-900 text-xs">{activeInvoice.patientName}</strong>
@@ -328,7 +342,7 @@ export const BillingView: React.FC = () => {
                 <div className="text-right">
                   <span className="text-slate-400 text-[10px] uppercase block">Payment Mode:</span>
                   <strong className="text-emerald-700">{activeInvoice.paymentMode}</strong>
-                  <div className="text-[10px] text-slate-500">Status: {activeInvoice.paymentStatus}</div>
+                  <div className="text-[10px] text-slate-500">Status: {activeInvoice.status}</div>
                 </div>
               </div>
 
@@ -341,8 +355,8 @@ export const BillingView: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {activeInvoice.items.map((it) => (
-                    <tr key={it.id}>
+                  {activeInvoice.items.map((it, idx) => (
+                    <tr key={idx}>
                       <td className="py-2.5 text-slate-800 font-medium">{it.description}</td>
                       <td className="py-2.5 text-right font-mono font-bold text-slate-900">
                         ₹{it.amount}
@@ -367,7 +381,7 @@ export const BillingView: React.FC = () => {
                 <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
                   <span>Grand Total Paid:</span>
                   <span className="text-emerald-800 font-mono">
-                    ₹{calcSubtotal(activeInvoice.items) - activeInvoice.discount}
+                    ₹{activeInvoice.totalAmount || (calcSubtotal(activeInvoice.items) - (activeInvoice.discount || 0))}
                   </span>
                 </div>
               </div>
@@ -377,6 +391,11 @@ export const BillingView: React.FC = () => {
                 <span>Computerized receipt. Thank you for visiting {CLINIC_CONFIG.appName}.</span>
                 <span className="font-mono font-bold text-slate-700">{CLINIC_CONFIG.appName} Official Receipt</span>
               </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center text-slate-400 space-y-2">
+              <Receipt className="w-10 h-10 mx-auto text-slate-300" />
+              <p className="font-semibold text-slate-700">Select an invoice to preview receipt</p>
             </div>
           )}
         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useClinic } from '../context/ClinicContext';
-import { Gender, PatientVitals } from '../types';
+import { Gender, PatientVitals, HomeoMedicine } from '../types';
+import { CLINIC_CONFIG } from '../config/clinicConfig';
 import { parsePatientWithAI, parsePatientTextLocally } from '../utils/patientVoiceParser';
 import {
   X,
@@ -15,7 +16,10 @@ import {
   Sparkles,
   Loader2,
   Check,
-  AlertCircle
+  AlertCircle,
+  Pill,
+  Receipt,
+  IndianRupee
 } from 'lucide-react';
 
 interface PatientRegistrationModalProps {
@@ -27,17 +31,20 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
   isOpen,
   onClose
 }) => {
-  const { createPatient } = useClinic();
+  const { createPatient, savePrescription, saveInvoice, selectPatient } = useClinic();
 
   const [name, setName] = useState('');
   const [age, setAge] = useState<number | ''>('');
   const [gender, setGender] = useState<Gender>('Female');
   const [mobile, setMobile] = useState('+91 ');
   const [address, setAddress] = useState('');
-  const [allergiesText, setAllergiesText] = useState('');
   const [chronicDiseasesText, setChronicDiseasesText] = useState('');
 
-  // Baseline Clinical Vitals (Only BP, RBS, Height in inch, Weight in Kg)
+  // Busy Practitioner Quick Shortcuts (Direct Medicine Given & Total Bill)
+  const [medicineGiven, setMedicineGiven] = useState('');
+  const [totalBill, setTotalBill] = useState<number | ''>('');
+
+  // Baseline Clinical Vitals (BP, RBS, Height in inch, Weight in Kg)
   const [bpSystolic, setBpSystolic] = useState<number>(120);
   const [bpDiastolic, setBpDiastolic] = useState<number>(80);
   const [rbs, setRbs] = useState<number>(110);
@@ -94,7 +101,7 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
       recognition.onstart = () => {
         setIsListening(true);
         setAiMessage({
-          text: 'Listening... Speak patient details (e.g. "Sachin Chougule 25 years male satya at Belgaum, BP 130-80, RBS 110")',
+          text: 'Listening... Speak details (e.g. "sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110, Medicine Arnica 200 TDS, Bill 500")',
           type: 'info'
         });
       };
@@ -180,12 +187,16 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
         setHeightInches(parsed.heightInches);
         fieldsFilledCount++;
       }
-      if (parsed.allergies && parsed.allergies.length > 0) {
-        setAllergiesText(parsed.allergies.join(', '));
-        fieldsFilledCount++;
-      }
       if (parsed.chronicDiseases && parsed.chronicDiseases.length > 0) {
         setChronicDiseasesText(parsed.chronicDiseases.join(', '));
+        fieldsFilledCount++;
+      }
+      if (parsed.medicineGiven) {
+        setMedicineGiven(parsed.medicineGiven);
+        fieldsFilledCount++;
+      }
+      if (parsed.totalBill !== undefined && parsed.totalBill !== null) {
+        setTotalBill(parsed.totalBill);
         fieldsFilledCount++;
       }
 
@@ -199,6 +210,8 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
       if (parsed.address) summaryParts.push(parsed.address);
       if (parsed.bpSystolic && parsed.bpDiastolic) summaryParts.push(`BP ${parsed.bpSystolic}/${parsed.bpDiastolic}`);
       if (parsed.rbs) summaryParts.push(`RBS ${parsed.rbs}`);
+      if (parsed.medicineGiven) summaryParts.push(`Med: ${parsed.medicineGiven}`);
+      if (parsed.totalBill) summaryParts.push(`Bill ₹${parsed.totalBill}`);
 
       setAiMessage({
         text: `AI Auto-filled (${fieldsFilledCount} fields): ${summaryParts.join(' • ')}`,
@@ -215,9 +228,11 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
       if (local.bpSystolic) setBpSystolic(local.bpSystolic);
       if (local.bpDiastolic) setBpDiastolic(local.bpDiastolic);
       if (local.rbs) setRbs(local.rbs);
+      if (local.medicineGiven) setMedicineGiven(local.medicineGiven);
+      if (local.totalBill) setTotalBill(local.totalBill);
 
       setAiMessage({
-        text: `Extracted: ${local.name || ''} ${local.age ? `${local.age} Yrs` : ''} BP ${local.bpSystolic || 120}/${local.bpDiastolic || 80} RBS ${local.rbs || 110}`,
+        text: `Extracted: ${local.name || ''} ${local.age ? `${local.age} Yrs` : ''} BP ${local.bpSystolic || 120}/${local.bpDiastolic || 80} RBS ${local.rbs || 110}${local.medicineGiven ? ` • Med: ${local.medicineGiven}` : ''}${local.totalBill ? ` • Bill: ₹${local.totalBill}` : ''}`,
         type: 'success'
       });
     } finally {
@@ -226,7 +241,7 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
   };
 
   const handleApplyExample = () => {
-    const example = 'sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110';
+    const example = 'sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110, Medicine Arnica 200 TDS, Bill 500';
     setVoiceText(example);
     handleAutoFill(example);
   };
@@ -243,10 +258,11 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !mobile.trim()) {
-      alert('Please provide patient name and contact mobile number.');
-      return;
-    }
+    // Non-compulsory / no mandatory blocking for fast OPD registration
+    const finalName = name.trim() || 'Patient (OPD Walk-in)';
+    const finalMobile = mobile.trim() && mobile.trim() !== '+91' ? mobile.trim() : 'Not provided';
+    const finalAge = typeof age === 'number' && age > 0 ? age : 30;
+    const finalAddress = address.trim() || 'Belgaum';
 
     const calculatedBmi = calculateBmi();
 
@@ -264,26 +280,117 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
       respiratoryRate: 16
     };
 
-    const allergies = allergiesText
-      .split(',')
-      .map(s => s.trim())
-      .filter(Boolean);
-
     const chronicDiseases = chronicDiseasesText
       .split(',')
       .map(s => s.trim())
       .filter(Boolean);
 
-    createPatient({
-      name: name.trim(),
-      age: age === '' ? 30 : Number(age),
+    // 1. Create Patient in clinic system
+    const newPatient = createPatient({
+      name: finalName,
+      age: finalAge,
       gender,
-      mobile: mobile.trim(),
-      address: address.trim() || 'Not specified',
+      mobile: finalMobile,
+      address: finalAddress,
       vitals,
-      allergies,
+      allergies: [],
       chronicDiseases
     });
+
+    // Automatically focus on the newly registered patient
+    selectPatient(newPatient.id);
+
+    // 2. Integration with Prescription: if Medicine Given is provided
+    if (medicineGiven.trim()) {
+      const medLines = medicineGiven
+        .split(/[,\n;]/)
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const homeoMedicines: HomeoMedicine[] = medLines.map((line, idx) => {
+        const potencyMatch = line.match(/\b(30C|200C|1M|10M|50M|CM|LM\s*\d|Q|3X|6X|12X|30|200)\b/i);
+        let potency: HomeoMedicine['potency'] = '200C';
+        let remedyName = line;
+        if (potencyMatch) {
+          const pStr = potencyMatch[0].toUpperCase();
+          if (pStr === '30' || pStr === '30C') potency = '30C';
+          else if (pStr === '200' || pStr === '200C') potency = '200C';
+          else if (pStr === '1M') potency = '1M';
+          else if (pStr === '10M') potency = '10M';
+          else if (pStr === 'Q') potency = 'Q (Mother Tincture)';
+          else if (pStr.includes('LM')) potency = 'LM 1';
+          remedyName = line.replace(potencyMatch[0], '').replace(/[()]/g, '').trim();
+        }
+        return {
+          id: `hm-quick-${Date.now()}-${idx}`,
+          remedy: remedyName || line,
+          potency,
+          form: 'Globules #30' as const,
+          dosage: '4 pills',
+          frequency: 'TDS (Thrice Daily)' as const,
+          duration: '7 days',
+          instructions: 'Take in clean mouth 30 mins before food. Avoid strong coffee or raw onion.'
+        };
+      });
+
+      savePrescription({
+        patientId: newPatient.id,
+        consultationDate: new Date().toISOString().split('T')[0],
+        diagnosis: chronicDiseases.length > 0 ? chronicDiseases.join(', ') : 'OPD Consultation Prescription',
+        clinicalNotes: `Direct Prescription entered at OPD Registration: ${medicineGiven.trim()}`,
+        homeoMedicines: homeoMedicines.length > 0 ? homeoMedicines : [
+          {
+            id: `hm-quick-${Date.now()}`,
+            remedy: medicineGiven.trim(),
+            potency: '200C',
+            form: 'Globules #30',
+            dosage: '4 pills',
+            frequency: 'TDS (Thrice Daily)',
+            duration: '7 days',
+            instructions: 'Take in clean mouth 30 mins before food.'
+          }
+        ],
+        alloMedicines: [],
+        dietaryAdvise: [
+          'Maintain regular meal timings; avoid fasting or skipping meals.',
+          'Drink 2.5 - 3 Litres of clean water daily.',
+          'Avoid strong camphor, raw onions, or garlic around homeopathic doses.'
+        ],
+        investigationsOrdered: [],
+        followUpDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        doctorName: CLINIC_CONFIG.doctorName,
+        doctorDegree: CLINIC_CONFIG.qualifications,
+        doctorRegNo: CLINIC_CONFIG.regNo,
+        clinicName: CLINIC_CONFIG.appName,
+        clinicAddress: CLINIC_CONFIG.address,
+        clinicPhone: CLINIC_CONFIG.phone
+      });
+    }
+
+    // 3. Integration with Main Billing: if Total Bill is provided
+    const billAmount = Number(totalBill);
+    if (billAmount && billAmount > 0) {
+      saveInvoice({
+        invoiceNumber: `CP-INV-${1080 + Math.floor(Math.random() * 900)}`,
+        patientId: newPatient.id,
+        patientName: newPatient.name,
+        date: new Date().toISOString().split('T')[0],
+        items: [
+          {
+            description: medicineGiven.trim()
+              ? `OPD Consultation & Dispensed Medicines (${medicineGiven.trim().slice(0, 45)})`
+              : 'OPD Consultation & Dispensing Fee',
+            amount: billAmount
+          }
+        ],
+        consultationFee: Math.round(billAmount * 0.6),
+        medicineCharges: Math.round(billAmount * 0.4),
+        discount: 0,
+        totalAmount: billAmount,
+        paymentMode: 'Cash',
+        status: 'Paid'
+      });
+    }
 
     onClose();
   };
@@ -303,7 +410,7 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
             <div>
               <h2 className="font-bold text-base text-white">Patient Registration</h2>
               <p className="text-xs text-slate-300">
-                Register new patient profile with baseline vitals
+                Fast OPD registration with instant prescription & billing shortcuts
               </p>
             </div>
           </div>
@@ -316,25 +423,26 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
         </div>
 
         {/* Modal Body Form */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-xs">
           {/* AI Voice & Text Smart Intake (Mic + Small text box + AI Auto-fill) */}
-          <div className="bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-slate-50 border border-teal-200/90 rounded-xl p-3.5 shadow-2xs space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <div className="w-6 h-6 rounded-md bg-teal-600 text-white flex items-center justify-center shadow-2xs">
+          <div className="bg-gradient-to-r from-teal-50 via-emerald-50 to-cyan-50 border border-teal-200 rounded-xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="p-1.5 rounded-lg bg-teal-600 text-white shadow-2xs">
                   <Sparkles className="w-3.5 h-3.5" />
-                </div>
-                <div>
-                  <span className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
-                    AI Voice Smart Intake <span className="text-[10px] text-teal-700 font-normal hidden sm:inline">(बोलून किंवा टाईप करून माहिती भरा)</span>
-                  </span>
-                </div>
+                </span>
+                <span className="font-bold text-slate-900 text-xs">
+                  AI Voice & Paragraph Smart Intake
+                </span>
+                <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-semibold">
+                  Voice / Text Auto-fill
+                </span>
               </div>
               <button
                 type="button"
                 onClick={handleApplyExample}
-                className="text-[11px] font-semibold text-teal-700 hover:text-teal-900 bg-white hover:bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200/80 shadow-2xs transition-colors"
-                title="Click to load: sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110"
+                className="text-[11px] font-semibold text-teal-700 hover:text-teal-900 underline flex items-center gap-1"
+                title="Paste example with medicine & bill"
               >
                 Try Example
               </button>
@@ -355,8 +463,8 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 }}
                 placeholder={
                   isListening
-                    ? '🔴 Listening... Speak now (बोला, नाव, वय, पत्ता, BP, शुगर...)'
-                    : 'Speak or type: e.g. "sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110"'
+                    ? '🔴 Listening... Speak now (नाव, वय, BP, शुगर, औषध, बिल...)'
+                    : 'Speak or type: e.g. "sachin chougule 25 years male satya at belgaum , Bp-130-80, RBS- 110, Medicine Arnica 200, Bill 500"'
                 }
                 className={`w-full pl-3 pr-24 py-2 text-xs rounded-lg border bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none transition-all ${
                   isListening
@@ -449,23 +557,23 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
             )}
           </div>
 
-          {/* Section 1: Demographics */}
+          {/* Section 1: Demographics (No Compulsory Fields) */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
               <User className="w-3.5 h-3.5 text-teal-600" />
               Patient Demographics
+              <span className="text-[10px] text-slate-400 font-normal lowercase">(all fields optional)</span>
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="sm:col-span-2">
                 <label className="block font-medium text-slate-700 mb-1">
-                  Full Name (with salutation) *
+                  Full Name (with salutation)
                 </label>
                 <input
                   id="input-patient-name"
                   type="text"
-                  required
-                  placeholder="e.g. Mrs. Sunita Verma / Mr. Rahul Patil"
+                  placeholder="e.g. Sachin Chougule / Mrs. Sunita Verma"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
@@ -475,14 +583,13 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Age (Years) *</label>
+                <label className="block font-medium text-slate-700 mb-1">Age (Years)</label>
                 <input
                   id="input-patient-age"
                   type="number"
                   min="0"
                   max="125"
-                  required
-                  placeholder="e.g. 35"
+                  placeholder="e.g. 25"
                   value={age}
                   onChange={(e) => setAge(e.target.value === '' ? '' : Number(e.target.value))}
                   className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
@@ -492,7 +599,7 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Gender *</label>
+                <label className="block font-medium text-slate-700 mb-1">Gender</label>
                 <select
                   id="select-patient-gender"
                   value={gender}
@@ -508,11 +615,10 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
               </div>
 
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Mobile (WhatsApp) *</label>
+                <label className="block font-medium text-slate-700 mb-1">Mobile (WhatsApp)</label>
                 <input
                   id="input-patient-mobile"
                   type="text"
-                  required
                   placeholder="+91 98200 12345"
                   value={mobile}
                   onChange={(e) => setMobile(e.target.value)}
@@ -527,7 +633,7 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
                 <input
                   id="input-patient-address"
                   type="text"
-                  placeholder="Street, City, Area (e.g. Belgaum)"
+                  placeholder="Street, City, Area (e.g. Satya at Belgaum)"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
@@ -538,150 +644,238 @@ export const PatientRegistrationModal: React.FC<PatientRegistrationModalProps> =
             </div>
           </div>
 
-          {/* Section 2: Baseline Clinical Vitals (BP, RBS, Height in inch, Weight in Kg) */}
+          {/* Section 2: Clinical Vitals */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
-              <Heart className="w-3.5 h-3.5 text-rose-500" />
-              Baseline Clinical Vitals
+              <Activity className="w-3.5 h-3.5 text-teal-600" />
+              Clinical Vitals
             </h3>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              {/* BP Systolic / Diastolic */}
-              <div className="sm:col-span-2 lg:col-span-1">
-                <label className="block font-medium text-slate-700 mb-1">BP (Systolic / Diastolic)</label>
-                <div className="flex items-center gap-1.5">
-                  <div className="relative flex-1">
-                    <input
-                      id="input-vitals-bp-systolic"
-                      type="number"
-                      placeholder="120"
-                      value={bpSystolic}
-                      onChange={(e) => setBpSystolic(Number(e.target.value))}
-                      className={`w-full border rounded-lg px-2.5 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
-                        highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
-                      }`}
-                    />
-                  </div>
-                  <span className="text-slate-400 font-bold">/</span>
-                  <div className="relative flex-1">
-                    <input
-                      id="input-vitals-bp-diastolic"
-                      type="number"
-                      placeholder="80"
-                      value={bpDiastolic}
-                      onChange={(e) => setBpDiastolic(Number(e.target.value))}
-                      className={`w-full border rounded-lg px-2.5 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
-                        highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
-                      }`}
-                    />
-                  </div>
-                  <span className="text-[10px] text-slate-400 font-medium shrink-0">mmHg</span>
-                </div>
-              </div>
-
-              {/* RBS (Blood Sugar) */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {/* BP Systolic */}
               <div>
-                <label className="block font-medium text-slate-700 mb-1">RBS (Blood Sugar)</label>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <Heart className="w-3 h-3 text-rose-500" />
+                  BP (Systolic)
+                </label>
                 <div className="relative">
                   <input
-                    id="input-vitals-rbs"
+                    id="input-bp-systolic"
                     type="number"
-                    value={rbs}
-                    onChange={(e) => setRbs(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    min="60"
+                    max="260"
+                    value={bpSystolic}
+                    onChange={(e) => setBpSystolic(Number(e.target.value))}
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
-                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">mg/dL</span>
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2">mmHg</span>
+                </div>
+              </div>
+
+              {/* BP Diastolic */}
+              <div>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <Heart className="w-3 h-3 text-rose-500" />
+                  BP (Diastolic)
+                </label>
+                <div className="relative">
+                  <input
+                    id="input-bp-diastolic"
+                    type="number"
+                    min="40"
+                    max="160"
+                    value={bpDiastolic}
+                    onChange={(e) => setBpDiastolic(Number(e.target.value))}
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                      highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
+                    }`}
+                  />
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2">mmHg</span>
+                </div>
+              </div>
+
+              {/* RBS */}
+              <div>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <Activity className="w-3 h-3 text-amber-500" />
+                  RBS (Blood Sugar)
+                </label>
+                <div className="relative">
+                  <input
+                    id="input-rbs"
+                    type="number"
+                    min="40"
+                    max="600"
+                    value={rbs}
+                    onChange={(e) => setRbs(Number(e.target.value))}
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                      highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
+                    }`}
+                  />
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2">mg/dL</span>
                 </div>
               </div>
 
               {/* Height in inches */}
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Height (inches)</label>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <Ruler className="w-3 h-3 text-indigo-500" />
+                  Height (inches)
+                </label>
                 <div className="relative">
                   <input
-                    id="input-vitals-height"
+                    id="input-height-inches"
                     type="number"
-                    step="0.5"
-                    placeholder="e.g. 65"
+                    min="20"
+                    max="96"
                     value={heightInches}
                     onChange={(e) => setHeightInches(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
-                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">in</span>
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2">inch</span>
                 </div>
               </div>
 
               {/* Weight in kg */}
               <div>
-                <label className="block font-medium text-slate-700 mb-1">Weight (kg)</label>
+                <label className="block font-medium text-slate-700 mb-1 flex items-center gap-1">
+                  <Weight className="w-3 h-3 text-emerald-500" />
+                  Weight (Kg)
+                </label>
                 <div className="relative">
                   <input
-                    id="input-vitals-weight"
+                    id="input-weight-kg"
                     type="number"
-                    step="0.5"
-                    placeholder="e.g. 60"
+                    min="2"
+                    max="250"
                     value={weight}
                     onChange={(e) => setWeight(Number(e.target.value))}
-                    className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    className={`w-full border rounded-lg px-2.5 py-1.5 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
                       highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
                     }`}
                   />
-                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2.5">kg</span>
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2">kg</span>
+                </div>
+              </div>
+
+              {/* Calculated BMI */}
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">
+                  Calculated BMI
+                </label>
+                <div className="w-full bg-slate-100 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-800 border border-slate-200">
+                  {calculateBmi()} kg/m²
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Section 3: Allergies & Chronic Conditions */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div>
-              <label className="block font-medium text-slate-700 mb-1">
-                Known Allergies (optional, comma separated)
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Dust, Penicillin, Peanuts"
-                value={allergiesText}
-                onChange={(e) => setAllergiesText(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
-              />
+          {/* Section 3: Busy Practitioner Shortcuts (Direct Medicine Given & Total Bill) */}
+          <div className="bg-gradient-to-br from-amber-50/70 via-emerald-50/40 to-teal-50/50 border border-amber-200 rounded-xl p-4 space-y-3.5 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="p-1 rounded bg-amber-500 text-white shadow-2xs">
+                  <Sparkles className="w-3.5 h-3.5" />
+                </span>
+                <span className="text-xs font-bold text-slate-900">
+                  Busy Practitioner Shortcuts (Instant Rx & Billing)
+                </span>
+              </div>
+              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full">
+                Auto-syncs with Prescription & Billing
+              </span>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Medicine Given */}
+              <div>
+                <label className="block font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <Pill className="w-3.5 h-3.5 text-teal-600" />
+                  Medicine Given
+                </label>
+                <input
+                  id="input-medicine-given"
+                  type="text"
+                  placeholder="e.g. Arnica 200 TDS, Nux Vomica 30"
+                  value={medicineGiven}
+                  onChange={(e) => setMedicineGiven(e.target.value)}
+                  className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                    highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
+                  }`}
+                />
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Automatically populates patient's Prescription letterhead
+                </span>
+              </div>
+
+              {/* Total Bill */}
+              <div>
+                <label className="block font-semibold text-slate-800 mb-1 flex items-center gap-1.5">
+                  <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+                  Total Bill (₹)
+                </label>
+                <div className="relative">
+                  <input
+                    id="input-total-bill"
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 500"
+                    value={totalBill}
+                    onChange={(e) => setTotalBill(e.target.value === '' ? '' : Number(e.target.value))}
+                    className={`w-full border rounded-lg px-3 py-2 text-xs text-slate-900 bg-white focus:ring-2 focus:ring-teal-500 focus:outline-none transition-all ${
+                      highlightFields ? 'border-teal-400 ring-2 ring-teal-200 bg-teal-50/20' : 'border-slate-300'
+                    }`}
+                  />
+                  <span className="text-[10px] text-slate-400 absolute right-2.5 top-2 font-medium">₹ INR</span>
+                </div>
+                <span className="text-[10px] text-slate-500 mt-1 block">
+                  Automatically generates paid receipt in Billing & Invoicing
+                </span>
+              </div>
+            </div>
+
+            {/* Chronic Health Conditions */}
             <div>
               <label className="block font-medium text-slate-700 mb-1">
                 Chronic Health Conditions (optional, comma separated)
               </label>
               <input
+                id="input-chronic-diseases"
                 type="text"
-                placeholder="e.g. Hypertension, Migraine, PCOD"
+                placeholder="e.g. Hypertension, Migraine, PCOD, Lumbar Spondylosis"
                 value={chronicDiseasesText}
                 onChange={(e) => setChronicDiseasesText(e.target.value)}
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-xs text-slate-900 focus:ring-2 focus:ring-teal-500 focus:outline-none"
               />
             </div>
           </div>
 
           {/* Footer Buttons */}
-          <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              id="btn-submit-patient-registration"
-              type="submit"
-              className="px-5 py-2 text-xs font-semibold rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors shadow-sm flex items-center gap-1.5"
-            >
-              <CheckCircle className="w-4 h-4" />
-              <span>Register Patient</span>
-            </button>
+          <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
+            <span className="text-[11px] text-slate-400">
+              No mandatory fields • Quick 1-click registration
+            </span>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-xs font-semibold rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                id="btn-submit-patient-registration"
+                type="submit"
+                className="px-5 py-2 text-xs font-semibold rounded-lg bg-teal-600 hover:bg-teal-500 text-white transition-colors shadow-sm flex items-center gap-1.5"
+              >
+                <CheckCircle className="w-4 h-4" />
+                <span>Register Patient</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

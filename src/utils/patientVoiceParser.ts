@@ -12,6 +12,8 @@ export interface ParsedPatientData {
   allergies?: string[];
   chronicDiseases?: string[];
   chiefComplaints?: string;
+  medicineGiven?: string;
+  totalBill?: number;
 }
 
 /**
@@ -123,6 +125,25 @@ export function parsePatientTextLocally(input: string): ParsedPatientData {
       result.name = words
         .map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
         .join(' ');
+    }
+  }
+
+  // 10. Medicine Given (Quick Prescription shortcut): e.g. "Medicine Arnica 200 TDS", "medicine Nux Vomica 30", "Rx: Bryonia 200"
+  const medMatch = text.match(/(?:medicine|medicines|med|rx|औषध|औषधे|remedy)[:\s-]+([^,;.\n]+?)(?=\s*(?:,|bill|fee|charge|amount|\b|$))/i);
+  if (medMatch) {
+    const rawMed = medMatch[1].trim();
+    if (rawMed.length >= 2) {
+      result.medicineGiven = rawMed;
+    }
+  }
+
+  // 11. Total Bill (Quick Billing shortcut): e.g. "Bill 500", "Total bill: 500", "Bill-500", "₹500", "fee 600"
+  const billMatch = text.match(/(?:total\s*bill|bill|fee|fees|charges?|amount|बिल|रुपये)[:\s-]*₹?\s*(\d{2,6})\b/i) ||
+                    text.match(/₹\s*(\d{2,6})\b/);
+  if (billMatch) {
+    const b = parseInt(billMatch[1], 10);
+    if (b > 0 && b <= 500000) {
+      result.totalBill = b;
     }
   }
 

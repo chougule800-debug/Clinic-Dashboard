@@ -59,6 +59,8 @@ Extract the following JSON fields:
 - allergies: string[] (any allergies mentioned)
 - chronicDiseases: string[] (any chronic illness mentioned)
 - chiefComplaints: string (any main complaint mentioned)
+- medicineGiven: string or null (Medicines given or prescribed, e.g. "Arnica 200 TDS" from "Medicine Arnica 200 TDS" or "Arnica 200")
+- totalBill: number or null (Total bill/fee in rupees, e.g. 500 from "Bill 500" or "Fee 500" or "₹500")
 
 Return ONLY a valid JSON object matching these fields with no markdown backticks and no extra commentary.`;
 

@@ -61,13 +61,32 @@ export const PrescriptionView: React.FC = () => {
   // Letterhead Font Size scale mode (defaulting to 'large' as requested by user)
   const [fontScale, setFontScale] = useState<'large' | 'xl' | 'standard'>('large');
 
-  // Sync vitals when patient changes
+  // Sync vitals and prescription details when patient changes or new prescription is recorded
   useEffect(() => {
     if (selectedPatient) {
       setBpValue(`${selectedPatient.vitals.bpSystolic}/${selectedPatient.vitals.bpDiastolic} mmHg`);
       setSugarValue(`${selectedPatient.vitals.rbs} mg/dL`);
+
+      const rx = prescriptions.find(p => p.patientId === selectedPatient.id);
+      if (rx) {
+        if (rx.diagnosis) setDiagnosis(rx.diagnosis);
+        if (rx.clinicalNotes) setClinicalNotes(rx.clinicalNotes);
+        if (rx.followUpDate) setFollowUpDate(rx.followUpDate);
+        if (rx.homeoMedicines && rx.homeoMedicines.length > 0) {
+          setHomeoMedicines(rx.homeoMedicines);
+        }
+        if (rx.alloMedicines) {
+          setAlloMedicines(rx.alloMedicines);
+        }
+        if (rx.dietaryAdvise && rx.dietaryAdvise.length > 0) {
+          setDietaryAdviseText(rx.dietaryAdvise.join('\n'));
+        }
+        if (rx.investigationsOrdered && rx.investigationsOrdered.length > 0) {
+          setInvestigationsText(rx.investigationsOrdered.join(', '));
+        }
+      }
     }
-  }, [selectedPatient?.id]);
+  }, [selectedPatient?.id, prescriptions]);
 
   // Homeopathic Medicines State
   const [homeoMedicines, setHomeoMedicines] = useState<HomeoMedicine[]>(
