@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useClinic } from '../context/ClinicContext';
 import { CLINIC_CONFIG } from '../config/clinicConfig';
+import { FirebaseStatusModal } from './FirebaseStatusModal';
 import {
   Stethoscope,
   Search,
@@ -29,6 +30,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
     resetDatabase,
     firestoreStatus,
     syncAllToCloud,
+    isFirebaseModalOpen,
+    openFirebaseModal,
+    closeFirebaseModal,
     currentUser
   } = useClinic();
 
@@ -145,12 +149,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
 
         {/* Right Tools & Badges */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Firestore Status Pill with Sync button */}
+          {/* Firestore Status Pill with Diagnostics & Sync Modal */}
           <button
             id="header-btn-firestore-sync"
-            onClick={handleSyncCloud}
-            disabled={firestoreStatus.isSyncing}
-            title={`Firestore Project: ${firestoreStatus.projectId} (${firestoreStatus.lastSyncedAt ? 'Last synced ' + firestoreStatus.lastSyncedAt : 'Active Cloud Sync'})`}
+            onClick={openFirebaseModal}
+            title={`Firebase Project: ${firestoreStatus.projectId} (${firestoreStatus.lastSyncedAt ? 'Last synced ' + firestoreStatus.lastSyncedAt : 'Active Cloud Sync'}). Click for Diagnostics & Rules.`}
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 hover:bg-emerald-900/60 text-xs font-medium transition-colors cursor-pointer"
           >
             {firestoreStatus.isSyncing ? (
@@ -220,6 +223,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenNewPatient }) => {
           </button>
         </div>
       </div>
+
+      {/* Firebase Cloud Connection Diagnostics & Sync Modal */}
+      <FirebaseStatusModal
+        isOpen={isFirebaseModalOpen}
+        onClose={closeFirebaseModal}
+      />
     </header>
   );
 };

@@ -182,6 +182,8 @@ export interface WhatsAppMessage {
     type: 'case_intake' | 'prescription' | 'appointment';
     system?: ClinicalSystemKey;
     patientId?: string;
+    title?: string;
+    url?: string;
   };
 }
 

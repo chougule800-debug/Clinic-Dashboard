@@ -24,7 +24,8 @@ import {
   X,
   Lock,
   ArrowLeft,
-  Share2
+  Share2,
+  ClipboardList
 } from 'lucide-react';
 
 interface PatientPortalViewProps {
@@ -49,7 +50,9 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
     prescriptions,
     invoices,
     submitRemoteIntake,
-    saveSystemForm
+    saveSystemForm,
+    selectPatient,
+    setActiveTab
   } = useClinic();
 
   // Resolve target patient
@@ -294,8 +297,23 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
 
                   <div className="pt-4 flex flex-wrap items-center justify-center gap-3">
                     <button
+                      type="button"
+                      onClick={() => {
+                        if (targetPatient) {
+                          selectPatient(targetPatient.id);
+                        }
+                        setActiveTab('case_summary');
+                        handleExit();
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
+                    >
+                      <ClipboardList className="w-4 h-4" />
+                      <span>Review in Case Summary</span>
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => window.print()}
-                      className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-2"
+                      className="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <Printer className="w-4 h-4" />
                       <span>Print My Submitted Details</span>

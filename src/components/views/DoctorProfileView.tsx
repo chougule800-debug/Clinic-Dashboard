@@ -20,7 +20,8 @@ import {
   Users,
   LogOut,
   Sparkles,
-  Info
+  Info,
+  Cloud
 } from 'lucide-react';
 
 export const DoctorProfileView: React.FC = () => {
@@ -31,7 +32,9 @@ export const DoctorProfileView: React.FC = () => {
     createDoctorUser,
     deleteDoctorUser,
     resetDoctorPassword,
-    logout
+    logout,
+    openFirebaseModal,
+    firestoreStatus
   } = useClinic();
 
   // Profile Form state
@@ -336,6 +339,30 @@ export const DoctorProfileView: React.FC = () => {
 
         {/* Right Col: Multi-Doctor Security & Isolation Overview */}
         <div className="space-y-4">
+          {/* Firebase Cloud Connection & Diagnostics */}
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
+                <Cloud className="w-4 h-4 text-emerald-600" />
+                <span>Firebase Cloud Database</span>
+              </div>
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                Connected
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Google Firebase Firestore project: <code className="font-mono text-emerald-700 font-semibold">{firestoreStatus.projectId}</code>. Remote WhatsApp case taking forms and clinical records sync to cloud with offline-first persistence.
+            </p>
+            <button
+              type="button"
+              onClick={openFirebaseModal}
+              className="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            >
+              <Cloud className="w-4 h-4 text-emerald-600" />
+              <span>Check Firebase Connection & Sync</span>
+            </button>
+          </div>
+
           <div className="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 shadow-xs space-y-3">
             <div className="flex items-center gap-2 text-teal-400 font-bold text-sm">
               <Shield className="w-4 h-4" />

@@ -33,6 +33,7 @@ import {
   syncFollowUpToFirestore,
   syncInvoiceToFirestore,
   fetchPatientsFromFirestore,
+  fetchSystemFormsFromFirestore,
   pushAllToFirestore
 } from '../lib/firestoreService';
 
@@ -55,6 +56,9 @@ interface ClinicContextType {
     error: string | null;
   };
   syncAllToCloud: () => Promise<{ successCount: number; errors: number }>;
+  isFirebaseModalOpen: boolean;
+  openFirebaseModal: () => void;
+  closeFirebaseModal: () => void;
 
   // Navigation / Modal triggers
   activeTab: string;
@@ -275,7 +279,11 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     error: null
   });
 
-  // Check initial Firestore connection on mount
+  const [isFirebaseModalOpen, setIsFirebaseModalOpen] = useState(false);
+  const openFirebaseModal = () => setIsFirebaseModalOpen(true);
+  const closeFirebaseModal = () => setIsFirebaseModalOpen(false);
+
+  // Check initial Firestore connection & load cloud documents on mount
   useEffect(() => {
     let isMounted = true;
     (async () => {
@@ -288,12 +296,57 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             lastSyncedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           }));
         }
+
+        // Also fetch and merge cloud system forms (e.g. submitted via remote intake)
+        const cloudForms = await fetchSystemFormsFromFirestore();
+        if (isMounted && cloudForms && cloudForms.length > 0) {
+          setSystemForms(prev => {
+            const merged = [...prev];
+            for (const cf of cloudForms) {
+              const idx = merged.findIndex(
+                f => f.id === cf.id || (f.patientId === cf.patientId && f.system === cf.system)
+              );
+              if (idx >= 0) {
+                merged[idx] = cf;
+              } else {
+                merged.unshift(cf);
+              }
+            }
+            return merged;
+          });
+        }
       } catch (err) {
         console.warn('Initial Firestore fetch fallback to local:', err);
       }
     })();
     return () => {
       isMounted = false;
+    };
+  }, []);
+
+  // Listen for real-time / cross-window / tab case form submissions
+  useEffect(() => {
+    const handleCaseSubmitted = (e: any) => {
+      const { patientId, record } = e.detail || {};
+      if (record) {
+        setSystemForms(prev => {
+          const idx = prev.findIndex(f => f.id === record.id || (f.patientId === record.patientId && f.system === record.system));
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = record;
+            return next;
+          }
+          return [record, ...prev];
+        });
+      }
+      if (patientId) {
+        setSelectedPatientId(patientId);
+      }
+    };
+
+    window.addEventListener('ayush_case_form_submitted', handleCaseSubmitted as any);
+    return () => {
+      window.removeEventListener('ayush_case_form_submitted', handleCaseSubmitted as any);
     };
   }, []);
 
@@ -848,8 +901,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const submitRemoteIntake = (patientId: string, system: ClinicalSystemKey, payload: any) => {
-    // Save as remote submitted form
-    saveSystemForm({
+    // 1. Save as remote submitted form in state & cloud
+    const savedRecord = saveSystemForm({
       patientId,
       system,
       data: payload.data || {},
@@ -863,15 +916,51 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       submittedVia: 'WhatsApp_Remote_Intake'
     });
 
-    // Post update into WhatsApp inbox for this patient!
+    // 2. Select patient and active system so Case Summary targets this intake
+    setSelectedPatientId(patientId);
+    setActiveSystemFormKey(system);
+
+    // 3. Immediately store across doctor localStorage keys
+    try {
+      const activeKeys = [`ayush_doc_bharat_system_forms`, `${LOCAL_STORAGE_KEY}_system_forms`];
+      if (currentUser?.id) {
+        activeKeys.push(`ayush_${currentUser.id}_system_forms`);
+      }
+      for (const k of activeKeys) {
+        const stored = localStorage.getItem(k);
+        let list: SystemFormRecord[] = stored ? JSON.parse(stored) : [];
+        const existIdx = list.findIndex(f => f.patientId === patientId && f.system === system);
+        if (existIdx >= 0) {
+          list[existIdx] = savedRecord;
+        } else {
+          list = [savedRecord, ...list];
+        }
+        localStorage.setItem(k, JSON.stringify(list));
+      }
+
+      window.dispatchEvent(
+        new CustomEvent('ayush_case_form_submitted', {
+          detail: { patientId, system, record: savedRecord }
+        })
+      );
+    } catch (e) {
+      console.warn('Storage sync error:', e);
+    }
+
+    // 4. Post update into WhatsApp inbox for this patient with quick action to Case Summary!
     const targetConv = conversations.find(c => c.patientId === patientId);
     if (targetConv) {
-      const nowStr = 'Just now';
+      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       const patientMsg: WhatsAppMessage = {
         id: `msg-resp-${Date.now()}`,
         sender: 'patient',
-        text: `✅ Doctor, I have completed and submitted my ${system.replace('_', ' ').toUpperCase()} case form!`,
-        timestamp: nowStr
+        text: `✅ Doctor, I have completed and submitted my ${system.replace('_', ' ').toUpperCase()} case form! All symptoms & modalities are stored for your Case Summary review.`,
+        timestamp: nowStr,
+        linkData: {
+          type: 'case_intake',
+          title: `View ${system.replace('_', ' ').toUpperCase()} Case Summary`,
+          url: `/?view=case_summary&patient=${patientId}&system=${system}`
+        }
       };
 
       setConversations(prev =>
@@ -969,6 +1058,9 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         invoices,
         firestoreStatus,
         syncAllToCloud,
+        isFirebaseModalOpen,
+        openFirebaseModal,
+        closeFirebaseModal,
         activeTab,
         setActiveTab,
         activeSystemFormKey,

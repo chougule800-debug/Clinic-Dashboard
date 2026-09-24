@@ -30,7 +30,8 @@ export const WhatsAppInboxView: React.FC = () => {
     openRemoteIntakeModal,
     sendWhatsAppMessage,
     selectPatient,
-    setActiveTab
+    setActiveTab,
+    currentUser
   } = useClinic();
 
   const [activeConvId, setActiveConvId] = useState(conversations[0]?.id || '');
@@ -66,13 +67,15 @@ export const WhatsAppInboxView: React.FC = () => {
     const ptId = activeConv.patientId || selectedPatient?.id || 'PT-1001';
     const sysKey = activeSystemFormKey || 'headache';
 
+    const docName = currentUser?.name || 'Dr. Bharat Chougule';
+
     if (templateType === 'intake_link') {
       const url = `${window.location.origin}/?pt=${ptId}&system=${sysKey}&mode=intake`;
-      text = `Namaste ${activeConv.patientName}, Dr. Anand Deshpande requests you to fill your structured ${activeConv.category || 'Headache'} Case Taking questionnaire prior to consultation: ${url}`;
+      text = `Namaste ${activeConv.patientName}, ${docName} requests you to fill your structured ${activeConv.category || 'Headache'} Case Taking questionnaire prior to consultation: ${url}`;
     } else if (templateType === 'appointment_reminder') {
-      text = `Namaste ${activeConv.patientName}, this is a gentle reminder for your scheduled clinical consultation at ClinicaPro with Dr. Anand Deshpande today. Please bring any prior medical reports.`;
+      text = `Namaste ${activeConv.patientName}, this is a gentle reminder for your scheduled clinical consultation with ${docName} today. Please bring any prior medical reports.`;
     } else if (templateType === 'prescription_followup') {
-      text = `Hello ${activeConv.patientName}, please update us on your response to the prescribed homeopathic medicine. Are your headaches better or worse?`;
+      text = `Hello ${activeConv.patientName}, please update us on your response to the prescribed medicine. Are your symptoms better or worse?`;
     }
 
     if (text) {
@@ -298,6 +301,25 @@ export const WhatsAppInboxView: React.FC = () => {
                       }`}
                     >
                       <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>
+
+                      {/* Interactive View in Case Summary button for intake submissions */}
+                      {(!isDoctor && (msg.linkData?.type === 'case_intake' || msg.text.toLowerCase().includes('case form') || msg.text.toLowerCase().includes('submitted'))) && (
+                        <div className="pt-2 border-t border-slate-100 mt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (activeConv.patientId) {
+                                selectPatient(activeConv.patientId);
+                              }
+                              setActiveTab('case_summary');
+                            }}
+                            className="w-full py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 rounded-xl font-bold text-[11px] flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                          >
+                            <ClipboardList className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>View in Case Summary ➔</span>
+                          </button>
+                        </div>
+                      )}
 
                       <div
                         className={`flex items-center justify-end gap-1 text-[9px] pt-1 ${
