@@ -796,33 +796,68 @@ export const CLINICAL_SYSTEMS_METADATA: {
   },
   {
     key: 'other_mind_generals',
-    label: 'Other Systems / Mind & Generals',
-    iconName: 'Sparkle',
-    description: 'Thermal state (chilly vs hot), emotional mind generals, sleep, dreams, perspiration.',
+    label: 'Mind & Generals / Psycho-Somatic (मानसिक-शारीरिक)',
+    iconName: 'Brain',
+    description: 'Psycho-somatic mapping, emotional triggers, mind states, emotion-body sequence, Kent rubrics, sleep & generals.',
     fields: [
       {
-        name: 'thermalState',
-        label: 'Thermal Reaction (Chilly vs Hot)',
+        name: 'mentalState',
+        label: 'Mental & Emotional State / मानसिक अवस्था',
         type: 'chips',
-        options: ['Chilly (Sensitive to cold draughts, needs warm clothing & covers)', 'Hot (Intolerant to heat, craves open air & fans)', 'Ambi-thermal (Sensitive to both extreme cold and heat)']
+        options: [
+          'Anxiety / चिंता',
+          'Fear / भीती',
+          'Anger / राग',
+          'Irritability / चिडचिड',
+          'Grief / दुःख',
+          'Sadness / उदासी',
+          'Jealousy / मत्सर',
+          'Restlessness / अस्वस्थता',
+          'Mood change / मनःस्थिती बदल',
+          'Desire for company / सोबत हवी',
+          'Desire for solitude / एकांताची इच्छा',
+          'Overthinking / अतिविचार'
+        ]
       },
       {
-        name: 'mindGenerals',
-        label: 'Mental & Emotional Disposition',
+        name: 'emotionalTriggers',
+        label: 'Emotional Triggers / मानसिक कारणे',
         type: 'chips',
-        options: ['Anxiety about health & future', 'Fastidious / perfectionist', 'Highly irritable, fault-finding, impatient', 'Mild, yielding, gentle, weeping when spoken to', 'Silent grief / suppressed emotions', 'Fear of death / dark / solitude', 'Restless physically and mentally']
+        options: [
+          'Work stress / कामाचा ताण',
+          'Family conflict / कौटुंबिक संघर्ष',
+          'Financial stress / आर्थिक ताण',
+          'Relationship conflict / संबंधातील संघर्ष',
+          'Grief / दुःख',
+          'Humiliation / अपमान',
+          'Suppression / भावना दडपणे'
+        ]
       },
       {
-        name: 'sleepPatterns',
-        label: 'Sleep Quality & Habits',
+        name: 'somatizationBody',
+        label: 'Psycho-Somatic Body Reaction / शारीरिक लक्षण',
         type: 'chips',
-        options: ['Sound refreshing sleep', 'Difficulty falling asleep before midnight', 'Waking between 2 AM and 4 AM', 'Unrefreshing sleep, wakes up tired', 'Restless tossing and turning']
+        options: [
+          'Headache/Migraine / डोकेदुखी',
+          'Palpitations / हृदयाची धडधड',
+          'Breathlessness/Chest tightness / छातीत जडपणा',
+          'Acidity/Gastric symptoms / आम्लपित्त',
+          'Bowel disturbance / आतड्यांची तक्रार',
+          'Sleep disturbance / झोपेचा त्रास'
+        ]
       },
       {
-        name: 'dreams',
-        label: 'Prominent Recurring Dreams',
+        name: 'generalModalities',
+        label: 'General Modalities / सामान्य लक्षणे',
         type: 'chips',
-        options: ['Dreams of falling / flying', 'Dreams of robbers / danger', 'Dreams of business / daily work', 'Nightmares of snakes / dead people', 'Dreams of water / drowning']
+        options: [
+          'Worse by heat / उष्णतेने वाढते',
+          'Worse by cold / थंडीने वाढते',
+          'Better by warmth / उष्णतेने आराम',
+          'Better by cold / थंडीत आराम',
+          'Worse at night / रात्री वाढते',
+          'Worse morning / सकाळी वाढते'
+        ]
       }
     ]
   }

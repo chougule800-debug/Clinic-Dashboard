@@ -6,6 +6,10 @@ import { NeuroSummaryCard } from './NeuroSummaryCard';
 import { GastroSummaryCard } from './GastroSummaryCard';
 import { UrinarySummaryCard } from './UrinarySummaryCard';
 import { MusculoskeletalSummaryCard } from './MusculoskeletalSummaryCard';
+import { RespiratorySummaryCard } from './RespiratorySummaryCard';
+import { FemaleGynaeSummaryCard } from './FemaleGynaeSummaryCard';
+import { PediatricSummaryCard } from './PediatricSummaryCard';
+import { MindGeneralsSummaryCard } from './MindGeneralsSummaryCard';
 import {
   FileCheck2,
   GitBranch,
@@ -294,6 +298,46 @@ export const CaseSummaryView: React.FC = () => {
                   );
                 }
 
+                if (rec.system === 'respiratory') {
+                  return (
+                    <RespiratorySummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'female_gynae') {
+                  return (
+                    <FemaleGynaeSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'pediatric') {
+                  return (
+                    <PediatricSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
+                if (rec.system === 'other_mind_generals') {
+                  return (
+                    <MindGeneralsSummaryCard
+                      key={rec.id}
+                      record={rec}
+                      patient={selectedPatient}
+                    />
+                  );
+                }
+
                 return (
                   <div
                     key={rec.id}
@@ -302,7 +346,7 @@ export const CaseSummaryView: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-slate-900 text-xs capitalize">
-                          {rec.system.replace('_', ' ')} System
+                          {String(rec.system).replace('_', ' ')} System
                         </span>
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
                           rec.severity === 'Severe'

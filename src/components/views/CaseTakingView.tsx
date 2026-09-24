@@ -7,6 +7,10 @@ import { NeuroCaseForm } from '../forms/NeuroCaseForm';
 import { GastroCaseForm } from '../forms/GastroCaseForm';
 import { UrinaryCaseForm } from '../forms/UrinaryCaseForm';
 import { MusculoskeletalCaseForm } from '../forms/MusculoskeletalCaseForm';
+import { RespiratoryCaseForm } from '../forms/RespiratoryCaseForm';
+import { FemaleGynaeCaseForm } from '../forms/FemaleGynaeCaseForm';
+import { PediatricCaseForm } from '../forms/PediatricCaseForm';
+import { MindGeneralsCaseForm } from '../forms/MindGeneralsCaseForm';
 import {
   ClipboardList,
   Save,
@@ -249,6 +253,14 @@ export const CaseTakingView: React.FC = () => {
         <UrinaryCaseForm />
       ) : activeSystemFormKey === 'musculoskeletal' ? (
         <MusculoskeletalCaseForm />
+      ) : activeSystemFormKey === 'respiratory' ? (
+        <RespiratoryCaseForm />
+      ) : activeSystemFormKey === 'female_gynae' ? (
+        <FemaleGynaeCaseForm />
+      ) : activeSystemFormKey === 'pediatric' ? (
+        <PediatricCaseForm />
+      ) : activeSystemFormKey === 'other_mind_generals' ? (
+        <MindGeneralsCaseForm />
       ) : (
         <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6 text-xs">
         {/* Active System Header & Status */}
