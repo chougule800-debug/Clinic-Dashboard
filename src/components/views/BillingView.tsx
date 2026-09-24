@@ -13,7 +13,8 @@ import {
   User,
   ShieldCheck,
   QrCode,
-  Filter
+  Filter,
+  MessageCircle
 } from 'lucide-react';
 
 export interface BillItemForm {
@@ -23,7 +24,13 @@ export interface BillItemForm {
 }
 
 export const BillingView: React.FC = () => {
-  const { selectedPatient, patients, invoices, saveInvoice } = useClinic();
+  const {
+    selectedPatient,
+    patients,
+    invoices,
+    saveInvoice,
+    openWhatsAppBillingShareDialog
+  } = useClinic();
 
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
   const [filterPatientOnly, setFilterPatientOnly] = useState(false);
@@ -323,12 +330,21 @@ export const BillingView: React.FC = () => {
                 <div className="text-right">
                   <div className="font-bold text-slate-900 text-sm">{activeInvoice.invoiceNumber || activeInvoice.id}</div>
                   <div className="text-[11px] text-slate-500">Date: {activeInvoice.date}</div>
-                  <button
-                    onClick={() => window.print()}
-                    className="mt-2 px-3 py-1 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center gap-1 ml-auto hover:bg-slate-800 transition-colors"
-                  >
-                    <Printer className="w-3.5 h-3.5" /> Print Receipt
-                  </button>
+                  <div className="mt-2 flex items-center justify-end gap-1.5">
+                    <button
+                      onClick={() => openWhatsAppBillingShareDialog(activeInvoice.patientId, activeInvoice.id)}
+                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs"
+                      title="Send this billing receipt to patient's WhatsApp"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="px-2.5 py-1 bg-slate-900 text-white rounded-lg text-xs font-semibold flex items-center gap-1 hover:bg-slate-800 transition-colors"
+                    >
+                      <Printer className="w-3.5 h-3.5" /> Print
+                    </button>
+                  </div>
                 </div>
               </div>
 

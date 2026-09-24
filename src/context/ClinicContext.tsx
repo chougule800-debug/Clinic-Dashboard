@@ -8,7 +8,9 @@ import {
   WhatsAppConversation,
   BillingInvoice,
   ClinicalSystemKey,
-  WhatsAppMessage
+  WhatsAppMessage,
+  WhatsAppShareDialogData,
+  WhatsAppShareType
 } from '../types';
 import {
   INITIAL_PATIENTS,
@@ -63,9 +65,14 @@ interface ClinicContextType {
   closeRemoteIntakeModal: () => void;
 
   // WhatsApp Share Dialog
-  whatsAppShareDialog: { isOpen: boolean; patientId: string; system: ClinicalSystemKey; phone: string; link: string; messageText: string } | null;
+  whatsAppShareDialog: WhatsAppShareDialogData | null;
   openWhatsAppShareDialog: (patientId: string, system: ClinicalSystemKey) => void;
+  openWhatsAppPrescriptionShareDialog: (patientId: string, prescriptionId?: string) => void;
+  openWhatsAppBillingShareDialog: (patientId: string, invoiceId?: string) => void;
   closeWhatsAppShareDialog: () => void;
+  generateWhatsAppLink: (patientId: string, system: ClinicalSystemKey) => { link: string; messageText: string; waUrl: string };
+  generateWhatsAppPrescriptionLink: (patientId: string, prescriptionId?: string) => { link: string; messageText: string; waUrl: string };
+  generateWhatsAppBillingLink: (patientId: string, invoiceId?: string) => { link: string; messageText: string; waUrl: string };
 
   // Actions
   selectPatient: (patientId: string) => void;
@@ -95,7 +102,6 @@ interface ClinicContextType {
   sendWhatsAppMessage: (convId: string, text: string, linkData?: WhatsAppMessage['linkData']) => void;
   updateConversationStatus: (convId: string, status: WhatsAppConversation['status']) => void;
   markConversationAsRead: (convId: string) => void;
-  generateWhatsAppLink: (patientId: string, system: ClinicalSystemKey) => { link: string; messageText: string; waUrl: string };
   submitRemoteIntake: (patientId: string, system: ClinicalSystemKey, payload: any) => void;
 
   // Billing
@@ -262,14 +268,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     system: ClinicalSystemKey;
   } | null>(null);
 
-  const [whatsAppShareDialog, setWhatsAppShareDialog] = useState<{
-    isOpen: boolean;
-    patientId: string;
-    system: ClinicalSystemKey;
-    phone: string;
-    link: string;
-    messageText: string;
-  } | null>(null);
+  const [whatsAppShareDialog, setWhatsAppShareDialog] = useState<WhatsAppShareDialogData | null>(null);
 
   // Sync to localStorage
   useEffect(() => {
@@ -499,8 +498,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const generateWhatsAppLink = (patientId: string, system: ClinicalSystemKey) => {
     const patient = patients.find(p => p.id === patientId) || selectedPatient;
-    const currentUrl = window.location.origin;
-    const shareableUrl = `${currentUrl}/?intake=${patientId}&system=${system}`;
+    const origin = window.location.origin + window.location.pathname;
+    const shareableUrl = `${origin}?view=intake&pt=${patientId}&system=${system}`;
     
     // System readable label
     const systemNames: Record<ClinicalSystemKey, string> = {
@@ -512,11 +511,56 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       respiratory: 'Respiratory & Cough',
       female_gynae: 'Female & Gynaecological Health',
       pediatric: 'Pediatric Case Taking',
-      other_mind_generals: 'Mind, Generals & Thermals'
+      other_mind_generals: 'Mind, Generals & Psycho-Somatic'
     };
 
     const sysName = systemNames[system] || system;
-    const messageText = `Hello ${patient ? patient.name : 'Patient'}, ${CLINIC_CONFIG.doctorName} at ${CLINIC_CONFIG.appName} has sent you your specialized Clinical Case Taking Form for *${sysName}*.\n\nPlease open this secure link on your phone to enter your symptoms before consultation:\n👉 ${shareableUrl}\n\nOnce submitted, Dr. Bharat Chougule will immediately review your case summary and prepare your repertorisation and prescription.`;
+    const messageText = `Hello ${patient ? patient.name : 'Patient'}, ${CLINIC_CONFIG.doctorName} at ${CLINIC_CONFIG.appName} has sent you your specialized Clinical Case Taking Form for *${sysName}*.\n\n📝 Open and fill your secure personal case form here:\n👉 ${shareableUrl}\n\n(Only your personal case intake form will open). Once submitted, Dr. Bharat will immediately review your case details and prepare your prescription.`;
+
+    const cleanNumber = patient ? patient.mobile.replace(/[^0-9]/g, '') : '';
+    const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(messageText)}`;
+
+    return {
+      link: shareableUrl,
+      messageText,
+      waUrl
+    };
+  };
+
+  const generateWhatsAppPrescriptionLink = (patientId: string, prescriptionId?: string) => {
+    const patient = patients.find(p => p.id === patientId) || selectedPatient;
+    const rx = prescriptionId
+      ? prescriptions.find(p => p.id === prescriptionId)
+      : prescriptions.find(p => p.patientId === patientId);
+
+    const origin = window.location.origin + window.location.pathname;
+    const shareableUrl = `${origin}?view=prescription&pt=${patientId}${rx?.id ? `&rx=${rx.id}` : ''}`;
+
+    const messageText = `Hello ${patient ? patient.name : 'Patient'}, your official digital prescription from ${CLINIC_CONFIG.doctorName} (${CLINIC_CONFIG.appName}) is ready.\n\n📄 View and download your prescription letterhead here:\n👉 ${shareableUrl}\n\n(Only your prescription will open). Please take remedies strictly as advised. Follow-up: ${rx?.followUpDate || 'as scheduled'}.\n\nFor any queries, reply to this WhatsApp message.`;
+
+    const cleanNumber = patient ? patient.mobile.replace(/[^0-9]/g, '') : '';
+    const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(messageText)}`;
+
+    return {
+      link: shareableUrl,
+      messageText,
+      waUrl
+    };
+  };
+
+  const generateWhatsAppBillingLink = (patientId: string, invoiceId?: string) => {
+    const patient = patients.find(p => p.id === patientId) || selectedPatient;
+    const inv = invoiceId
+      ? invoices.find(i => i.id === invoiceId)
+      : invoices.find(i => i.patientId === patientId);
+
+    const origin = window.location.origin + window.location.pathname;
+    const shareableUrl = `${origin}?view=billing&pt=${patientId}${inv?.id ? `&inv=${inv.id}` : ''}`;
+
+    const total = inv ? (inv.totalAmount || inv.items.reduce((s, it) => s + it.amount, 0) - (inv.discount || 0)) : 0;
+    const invNum = inv?.invoiceNumber || inv?.id || 'Receipt';
+
+    const messageText = `Hello ${patient ? patient.name : 'Patient'}, thank you for visiting ${CLINIC_CONFIG.appName}.\n\n🧾 Here is your official payment receipt #${invNum} for ₹${total} (Status: Paid):\n👉 ${shareableUrl}\n\n(Only your billing receipt will open). You can view, print, or save your receipt.`;
 
     const cleanNumber = patient ? patient.mobile.replace(/[^0-9]/g, '') : '';
     const waUrl = `https://wa.me/${cleanNumber}?text=${encodeURIComponent(messageText)}`;
@@ -537,15 +581,50 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const openWhatsAppShareDialog = (patientId: string, system: ClinicalSystemKey) => {
-    const patient = patients.find(p => p.id === patientId);
+    const patient = patients.find(p => p.id === patientId) || selectedPatient;
     const { link, messageText } = generateWhatsAppLink(patientId, system);
     setWhatsAppShareDialog({
       isOpen: true,
+      type: 'intake',
       patientId,
       system,
       phone: patient ? patient.mobile : '',
       link,
-      messageText
+      messageText,
+      title: 'WhatsApp Remote Case Taking Link',
+      subtitle: `Remote symptom intake form for ${patient?.name || 'Patient'} (${system.replace('_', ' ')})`
+    });
+  };
+
+  const openWhatsAppPrescriptionShareDialog = (patientId: string, prescriptionId?: string) => {
+    const patient = patients.find(p => p.id === patientId) || selectedPatient;
+    const { link, messageText } = generateWhatsAppPrescriptionLink(patientId, prescriptionId);
+    setWhatsAppShareDialog({
+      isOpen: true,
+      type: 'prescription',
+      patientId,
+      prescriptionId,
+      phone: patient ? patient.mobile : '',
+      link,
+      messageText,
+      title: 'WhatsApp Digital Prescription Link',
+      subtitle: `Official prescription for ${patient?.name || 'Patient'}`
+    });
+  };
+
+  const openWhatsAppBillingShareDialog = (patientId: string, invoiceId?: string) => {
+    const patient = patients.find(p => p.id === patientId) || selectedPatient;
+    const { link, messageText } = generateWhatsAppBillingLink(patientId, invoiceId);
+    setWhatsAppShareDialog({
+      isOpen: true,
+      type: 'billing',
+      patientId,
+      invoiceId,
+      phone: patient ? patient.mobile : '',
+      link,
+      messageText,
+      title: 'WhatsApp Billing Receipt Link',
+      subtitle: `Official invoice receipt for ${patient?.name || 'Patient'}`
     });
   };
 
@@ -684,6 +763,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         closeRemoteIntakeModal,
         whatsAppShareDialog,
         openWhatsAppShareDialog,
+        openWhatsAppPrescriptionShareDialog,
+        openWhatsAppBillingShareDialog,
         closeWhatsAppShareDialog,
         selectPatient,
         createPatient,
@@ -697,6 +778,8 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         updateConversationStatus,
         markConversationAsRead,
         generateWhatsAppLink,
+        generateWhatsAppPrescriptionLink,
+        generateWhatsAppBillingLink,
         submitRemoteIntake,
         saveInvoice,
         resetDatabase

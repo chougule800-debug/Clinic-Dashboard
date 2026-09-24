@@ -27,7 +27,7 @@ export const PrescriptionView: React.FC = () => {
     selectedPatient,
     prescriptions,
     savePrescription,
-    openWhatsAppShareDialog,
+    openWhatsAppPrescriptionShareDialog,
     activeSystemFormKey
   } = useClinic();
 
@@ -229,9 +229,9 @@ export const PrescriptionView: React.FC = () => {
 
   const handleWhatsAppShare = () => {
     if (!selectedPatient) return;
-    openWhatsAppShareDialog(
+    openWhatsAppPrescriptionShareDialog(
       selectedPatient.id,
-      activeSystemFormKey || 'headache'
+      existingRx?.id
     );
   };
 

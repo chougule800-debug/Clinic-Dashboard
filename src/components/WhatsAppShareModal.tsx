@@ -9,7 +9,10 @@ import {
   ExternalLink,
   Smartphone,
   ShieldCheck,
-  ArrowRight
+  ArrowRight,
+  FileText,
+  Receipt,
+  Lock
 } from 'lucide-react';
 
 export const WhatsAppShareModal: React.FC = () => {
@@ -25,10 +28,20 @@ export const WhatsAppShareModal: React.FC = () => {
 
   if (!whatsAppShareDialog || !whatsAppShareDialog.isOpen) return null;
 
-  const { patientId, system, phone, link, messageText } = whatsAppShareDialog;
+  const {
+    type = 'intake',
+    patientId,
+    system = 'headache',
+    phone,
+    link,
+    messageText,
+    title,
+    subtitle
+  } = whatsAppShareDialog;
+
   const patient = patients.find(p => p.id === patientId);
 
-  const cleanPhone = phone.replace(/[^0-9]/g, '');
+  const cleanPhone = phone ? phone.replace(/[^0-9]/g, '') : '';
   const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(messageText)}`;
 
   const handleCopyLink = () => {
@@ -43,6 +56,52 @@ export const WhatsAppShareModal: React.FC = () => {
     setTimeout(() => setCopiedMessage(false), 2000);
   };
 
+  const getTypeIcon = () => {
+    switch (type) {
+      case 'prescription':
+        return <FileText className="w-5 h-5" />;
+      case 'billing':
+        return <Receipt className="w-5 h-5" />;
+      default:
+        return <Share2 className="w-5 h-5" />;
+    }
+  };
+
+  const getHeaderTheme = () => {
+    switch (type) {
+      case 'prescription':
+        return 'bg-teal-700';
+      case 'billing':
+        return 'bg-emerald-800';
+      default:
+        return 'bg-emerald-700';
+    }
+  };
+
+  const getDefaultTitle = () => {
+    if (title) return title;
+    switch (type) {
+      case 'prescription':
+        return 'WhatsApp Digital Prescription Link';
+      case 'billing':
+        return 'WhatsApp Billing Receipt Link';
+      default:
+        return 'WhatsApp Remote Case Taking Link';
+    }
+  };
+
+  const getDefaultSubtitle = () => {
+    if (subtitle) return subtitle;
+    switch (type) {
+      case 'prescription':
+        return `Official prescription for ${patient?.name || 'Patient'}`;
+      case 'billing':
+        return `Official invoice receipt for ${patient?.name || 'Patient'}`;
+      default:
+        return `Remote symptom intake for ${patient?.name || 'Patient'} (${system.replace('_', ' ')})`;
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4">
       <div
@@ -50,21 +109,21 @@ export const WhatsAppShareModal: React.FC = () => {
         className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="px-5 py-4 bg-emerald-700 text-white flex items-center justify-between">
+        <div className={`px-5 py-4 ${getHeaderTheme()} text-white flex items-center justify-between`}>
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-white/20 text-white">
-              <Share2 className="w-5 h-5" />
+              {getTypeIcon()}
             </div>
             <div>
-              <h3 className="font-bold text-base">WhatsApp Remote Case Taking Link</h3>
+              <h3 className="font-bold text-base">{getDefaultTitle()}</h3>
               <p className="text-xs text-emerald-100">
-                Remote symptom intake for {patient?.name || 'Patient'} ({system.replace('_', ' ')})
+                {getDefaultSubtitle()}
               </p>
             </div>
           </div>
           <button
             onClick={closeWhatsAppShareDialog}
-            className="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800 transition-colors"
+            className="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-black/20 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -80,13 +139,19 @@ export const WhatsAppShareModal: React.FC = () => {
               <div className="text-slate-500 text-xs">WhatsApp: {phone || 'Not recorded'}</div>
             </div>
             <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-300 capitalize">
-              {system.replace('_', ' ')} System
+              {type === 'prescription'
+                ? 'Prescription Only'
+                : type === 'billing'
+                ? 'Billing Receipt Only'
+                : `${system.replace('_', ' ')} Form`}
             </span>
           </div>
 
           {/* Shareable Link Input */}
           <div>
-            <label className="block font-semibold text-slate-700 mb-1">Shareable Case Form Web Link</label>
+            <label className="block font-semibold text-slate-700 mb-1">
+              Patient Standalone Link (Opens ONLY this {type === 'prescription' ? 'prescription' : type === 'billing' ? 'receipt' : 'form'})
+            </label>
             <div className="flex items-center gap-2">
               <input
                 type="text"
@@ -136,26 +201,30 @@ export const WhatsAppShareModal: React.FC = () => {
               <ExternalLink className="w-3.5 h-3.5 opacity-80" />
             </a>
 
-            {/* Test Patient Remote View directly inside App */}
-            <button
-              id="btn-simulate-patient-view"
-              type="button"
-              onClick={() => {
-                closeWhatsAppShareDialog();
-                openRemoteIntakeModal(patientId, system);
-              }}
+            {/* Test Standalone Patient View in a new tab */}
+            <a
+              id="btn-preview-patient-link"
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-medium transition-colors flex items-center justify-center gap-2 text-xs"
             >
               <Smartphone className="w-4 h-4 text-emerald-400" />
-              <span>Test Remote Patient Intake View (Simulator)</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+              <span>
+                {type === 'prescription'
+                  ? 'Preview Patient Prescription View (New Tab)'
+                  : type === 'billing'
+                  ? 'Preview Patient Receipt View (New Tab)'
+                  : 'Preview Patient Case Form View (New Tab)'}
+              </span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </a>
           </div>
 
-          <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+          <div className="text-[11px] text-slate-600 bg-emerald-50/60 p-2.5 rounded-lg border border-emerald-200/80 flex items-start gap-2">
+            <Lock className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
             <span>
-              When the patient fills and submits this form on their phone, the data is automatically attached to this patient's profile and immediately appears in <strong>Case Summary & Repertorisation</strong>.
+              <strong>Patient Privacy Guarantee:</strong> When the patient opens this link, <strong>only</strong> this {type === 'prescription' ? 'prescription' : type === 'billing' ? 'receipt' : 'form'} is displayed. The doctor dashboard, sidebar, and other patient records are completely hidden.
             </span>
           </div>
         </div>

@@ -6,6 +6,7 @@ import { PatientBanner } from './components/PatientBanner';
 import { PatientRegistrationModal } from './components/PatientRegistrationModal';
 import { WhatsAppShareModal } from './components/WhatsAppShareModal';
 import { RemoteIntakeModal } from './components/RemoteIntakeModal';
+import { PatientPortalView } from './components/patient-portal/PatientPortalView';
 
 // Views
 import { DashboardView } from './components/views/DashboardView';
@@ -21,35 +22,124 @@ import { ReportsView } from './components/views/ReportsView';
 import { WhatsAppInboxView } from './components/views/WhatsAppInboxView';
 import { ClinicalSystemKey } from './types';
 
+interface PatientPortalState {
+  isPatientPortal: boolean;
+  mode: 'intake' | 'prescription' | 'billing';
+  patientId: string | null;
+  system: ClinicalSystemKey | null;
+  rxId: string | null;
+  invId: string | null;
+}
+
+const checkPatientPortalFromUrl = (): PatientPortalState => {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const view = params.get('view');
+    const intake = params.get('intake');
+    const rx = params.get('rx');
+    const inv = params.get('inv');
+    const mode = params.get('mode');
+    const pt = params.get('pt') || intake;
+    const system = (params.get('system') as ClinicalSystemKey) || null;
+
+    if (view === 'intake' || intake || mode === 'intake') {
+      return {
+        isPatientPortal: true,
+        mode: 'intake',
+        patientId: pt,
+        system: system || 'headache',
+        rxId: null,
+        invId: null
+      };
+    }
+
+    if (view === 'prescription' || view === 'rx' || rx) {
+      return {
+        isPatientPortal: true,
+        mode: 'prescription',
+        patientId: pt,
+        system: null,
+        rxId: rx,
+        invId: null
+      };
+    }
+
+    if (view === 'billing' || view === 'inv' || inv) {
+      return {
+        isPatientPortal: true,
+        mode: 'billing',
+        patientId: pt,
+        system: null,
+        rxId: null,
+        invId: inv
+      };
+    }
+  } catch (e) {
+    console.warn('URL parsing error:', e);
+  }
+  return {
+    isPatientPortal: false,
+    mode: 'intake',
+    patientId: null,
+    system: null,
+    rxId: null,
+    invId: null
+  };
+};
+
 const MainLayout: React.FC = () => {
   const {
     activeTab,
-    openRemoteIntakeModal,
     selectPatient,
     setActiveSystemFormKey
   } = useClinic();
 
   const [isNewPatientModalOpen, setIsNewPatientModalOpen] = useState(false);
+  const [portalState, setPortalState] = useState<PatientPortalState>(() => checkPatientPortalFromUrl());
 
-  // Check URL params for direct simulated WhatsApp intake link opening
+  // Listen to popstate or direct URL changes
   useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const pt = params.get('pt');
-      const system = params.get('system') as ClinicalSystemKey | null;
-      const mode = params.get('mode');
-
-      if (pt && mode === 'intake') {
-        selectPatient(pt);
-        if (system) {
-          setActiveSystemFormKey(system);
-        }
-        openRemoteIntakeModal(pt, system || 'headache');
-      }
-    } catch (e) {
-      console.warn('URL parsing error:', e);
-    }
+    const handleUrlChange = () => {
+      setPortalState(checkPatientPortalFromUrl());
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    return () => window.removeEventListener('popstate', handleUrlChange);
   }, []);
+
+  // Sync patient selection if present in portal URL
+  useEffect(() => {
+    if (portalState.patientId) {
+      selectPatient(portalState.patientId);
+    }
+    if (portalState.system) {
+      setActiveSystemFormKey(portalState.system);
+    }
+  }, [portalState.patientId, portalState.system]);
+
+  // If patient portal mode is active, ONLY render the standalone form / rx / bill
+  // STRICT ISOLATION: The doctor dashboard, sidebar, header, and patient lists are completely hidden!
+  if (portalState.isPatientPortal) {
+    return (
+      <PatientPortalView
+        mode={portalState.mode}
+        patientId={portalState.patientId}
+        system={portalState.system}
+        rxId={portalState.rxId}
+        invId={portalState.invId}
+        onExitToDashboard={() => {
+          window.history.replaceState({}, '', window.location.pathname);
+          setPortalState({
+            isPatientPortal: false,
+            mode: 'intake',
+            patientId: null,
+            system: null,
+            rxId: null,
+            invId: null
+          });
+        }}
+      />
+    );
+  }
 
   const renderActiveView = () => {
     switch (activeTab) {

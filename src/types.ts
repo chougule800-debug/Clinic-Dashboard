@@ -145,6 +145,22 @@ export interface Appointment {
   notes?: string;
 }
 
+export type WhatsAppShareType = 'intake' | 'prescription' | 'billing';
+
+export interface WhatsAppShareDialogData {
+  isOpen: boolean;
+  type: WhatsAppShareType;
+  patientId: string;
+  system?: ClinicalSystemKey;
+  prescriptionId?: string;
+  invoiceId?: string;
+  phone: string;
+  link: string;
+  messageText: string;
+  title?: string;
+  subtitle?: string;
+}
+
 export type WhatsAppCategory =
   | 'All'
   | 'New enquiries'
