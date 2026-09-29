@@ -19,6 +19,8 @@ export const RemoteIntakeModal: React.FC = () => {
     closeRemoteIntakeModal,
     patients,
     submitRemoteIntake,
+    selectPatient,
+    setActiveSystemFormKey,
     setActiveTab
   } = useClinic();
 
@@ -138,6 +140,12 @@ export const RemoteIntakeModal: React.FC = () => {
               <div className="pt-4 flex flex-col gap-2">
                 <button
                   onClick={() => {
+                    if (patientId) {
+                      selectPatient(patientId);
+                    }
+                    if (system) {
+                      setActiveSystemFormKey(system);
+                    }
                     closeRemoteIntakeModal();
                     setActiveTab('case_summary');
                   }}

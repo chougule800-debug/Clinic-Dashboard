@@ -257,6 +257,58 @@ export async function fetchPrescriptionsFromFirestore(): Promise<Prescription[] 
   }
 }
 
+// Real-time listener for System Forms
+export function subscribeToSystemForms(
+  onUpdate: (forms: SystemFormRecord[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  try {
+    return onSnapshot(
+      collection(db, 'systemForms'),
+      (snap) => {
+        const list: SystemFormRecord[] = [];
+        snap.forEach(docSnap => {
+          list.push(docSnap.data() as SystemFormRecord);
+        });
+        onUpdate(list);
+      },
+      (err) => {
+        console.warn('[Firestore] SystemForms subscription notice:', err?.message || err);
+        if (onError) onError(err);
+      }
+    );
+  } catch (err) {
+    console.warn('[Firestore] Failed to attach systemForms listener:', err);
+    return () => {};
+  }
+}
+
+// Real-time listener for Patients
+export function subscribeToPatients(
+  onUpdate: (patients: Patient[]) => void,
+  onError?: (err: any) => void
+): () => void {
+  try {
+    return onSnapshot(
+      collection(db, 'patients'),
+      (snap) => {
+        const list: Patient[] = [];
+        snap.forEach(docSnap => {
+          list.push(docSnap.data() as Patient);
+        });
+        onUpdate(list);
+      },
+      (err) => {
+        console.warn('[Firestore] Patients subscription notice:', err?.message || err);
+        if (onError) onError(err);
+      }
+    );
+  } catch (err) {
+    console.warn('[Firestore] Failed to attach patients listener:', err);
+    return () => {};
+  }
+}
+
 // Batch push all local data to Firestore
 export async function pushAllToFirestore(data: {
   patients: Patient[];

@@ -76,112 +76,176 @@ export const SkinHairSummaryCard: React.FC<SkinHairSummaryCardProps> = ({ record
       </div>
 
       {/* Quick Status Bar */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-teal-50/50 p-3.5 rounded-xl border border-teal-100">
-        <div>
-          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Chief Concern</span>
-          <span className="font-bold text-slate-900 text-xs">{data.skinProblem || 'Acne / Hair fall'}</span>
-        </div>
-        <div>
-          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Acne Severity</span>
-          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
-            data.acneSeverity?.includes('Severe') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
-          }`}>
-            {data.acneSeverity || record.severity}
-          </span>
-        </div>
-        <div>
-          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Hair Loss Volume</span>
-          <span className="font-bold text-slate-900 text-xs">{data.hairAmount || '20–50/day'}</span>
-        </div>
-        <div>
-          <span className="text-[10px] text-slate-500 block uppercase font-semibold">Next Follow-up</span>
-          <span className="font-bold text-teal-800 text-xs">{data.followup || 'Not scheduled'}</span>
-        </div>
-      </div>
+      {(() => {
+        const chiefConcern = data.skinProblem || record.chiefComplaints || (data.lesionType ? (Array.isArray(data.lesionType) ? data.lesionType.join(', ') : data.lesionType) : 'Skin & Hair Complaint');
+        const durationDisplay = data.skinSince || record.duration || 'Reported via intake';
+        const severityDisplay = data.acneSeverity || record.severity || 'Moderate';
+        const hairVol = data.hairAmount || (data.hairComplaints ? (Array.isArray(data.hairComplaints) ? data.hairComplaints.join(', ') : data.hairComplaints) : 'Not specified');
 
-      {/* Grid: 2. Skin & Acne Totality & 3. Clinical Acne Photo */}
-      <div className="space-y-4">
-        <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5 text-teal-900 border-b border-slate-100 pb-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-          <span>2 & 3. Skin & Acne Totality / त्वचेची मुख्य समस्या व फोटो</span>
-        </h4>
+        const lesionList = Array.isArray(data.lesionType) ? data.lesionType : (data.lesionType ? [data.lesionType] : []);
+        const locations = (Array.isArray(data.acneLocation) && data.acneLocation.length > 0)
+          ? data.acneLocation
+          : (Array.isArray(data.location) ? data.location : (data.location ? [data.location] : []));
+        const itchingList = (Array.isArray(data.skinSymptom) && data.skinSymptom.length > 0)
+          ? data.skinSymptom
+          : (Array.isArray(data.itchingModality) ? data.itchingModality : (data.itchingModality ? [data.itchingModality] : []));
+        const triggersList = (Array.isArray(data.acneTrigger) && data.acneTrigger.length > 0)
+          ? data.acneTrigger
+          : (Array.isArray(data.triggers) ? data.triggers : (data.triggers ? [data.triggers] : []));
+        const discharges = Array.isArray(data.discharge) ? data.discharge : (data.discharge ? [data.discharge] : []);
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 space-y-3 bg-slate-50/60 p-4 rounded-xl border border-slate-200/80">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        return (
+          <>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-teal-50/50 p-3.5 rounded-xl border border-teal-100">
               <div>
-                <span className="text-[10px] text-slate-500 block">Problem & Duration</span>
-                <span className="font-semibold text-slate-900">{data.skinProblem} ({data.skinSince || 'N/A'})</span>
+                <span className="text-[10px] text-slate-500 block uppercase font-semibold">Chief Concern</span>
+                <span className="font-bold text-slate-900 text-xs line-clamp-1">{chiefConcern}</span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-500 block">Severity</span>
-                <span className="font-semibold text-slate-900">{data.acneSeverity || 'Moderate'}</span>
+                <span className="text-[10px] text-slate-500 block uppercase font-semibold">Severity</span>
+                <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  severityDisplay.includes('Severe') ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {severityDisplay}
+                </span>
               </div>
               <div>
-                <span className="text-[10px] text-slate-500 block">Skin History</span>
-                <span className="font-semibold text-slate-900">{data.skinHistory || 'None noted'}</span>
+                <span className="text-[10px] text-slate-500 block uppercase font-semibold">Duration / Since</span>
+                <span className="font-bold text-slate-900 text-xs">{durationDisplay}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-500 block uppercase font-semibold">Hair Complaints</span>
+                <span className="font-bold text-teal-800 text-xs line-clamp-1">{hairVol}</span>
               </div>
             </div>
 
-            {/* Acne Locations */}
-            {data.acneLocation && data.acneLocation.length > 0 && (
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-1">Acne Location(s):</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {data.acneLocation.map((loc: string) => (
-                    <span key={loc} className="px-2 py-0.5 bg-teal-100 text-teal-800 rounded-md text-[10px] font-medium">
-                      {loc}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Grid: 2. Skin & Acne Totality & 3. Clinical Acne Photo */}
+            <div className="space-y-4">
+              <h4 className="font-bold text-slate-900 text-xs flex items-center gap-1.5 text-teal-900 border-b border-slate-100 pb-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                <span>2 & 3. Skin Totality & Lesion Details / त्वचेची मुख्य समस्या व लक्षणे</span>
+              </h4>
 
-            {/* Skin Symptoms */}
-            {data.skinSymptom && data.skinSymptom.length > 0 && (
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-1">Skin Symptoms:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {data.skinSymptom.map((sym: string) => (
-                    <span key={sym} className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-medium">
-                      {sym}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Acne Triggers */}
-            {data.acneTrigger && data.acneTrigger.length > 0 && (
-              <div>
-                <span className="text-[10px] text-slate-500 block mb-1">Acne Triggers:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {data.acneTrigger.map((trig: string) => (
-                    <span key={trig} className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-medium">
-                      {trig}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {(data.acneTreatment || data.cosmetics) && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-200">
-                {data.acneTreatment && (
-                  <div>
-                    <span className="text-[10px] text-slate-500 block font-medium">Previous Treatment:</span>
-                    <span className="text-[11px] text-slate-700">{data.acneTreatment}</span>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="lg:col-span-2 space-y-3 bg-slate-50/60 p-4 rounded-xl border border-slate-200/80">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Problem / Complaint</span>
+                      <span className="font-semibold text-slate-900">{chiefConcern}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Severity & Duration</span>
+                      <span className="font-semibold text-slate-900">{severityDisplay} ({durationDisplay})</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-500 block">Skin History</span>
+                      <span className="font-semibold text-slate-900">{data.skinHistory || record.clinicalNotes || 'Recorded'}</span>
+                    </div>
                   </div>
-                )}
-                {data.cosmetics && (
-                  <div>
-                    <span className="text-[10px] text-slate-500 block font-medium">Cosmetics Used:</span>
-                    <span className="text-[11px] text-slate-700">{data.cosmetics}</span>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+
+                  {/* Lesion Types */}
+                  {lesionList.length > 0 && (
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Lesion Type(s):</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {lesionList.map((les: string) => (
+                          <span key={les} className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded-md text-[10px] font-medium">
+                            {les}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Locations */}
+                  {locations.length > 0 && (
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Distribution & Location(s):</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {locations.map((loc: string) => (
+                          <span key={loc} className="px-2 py-0.5 bg-teal-100 text-teal-800 rounded-md text-[10px] font-medium">
+                            {loc}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Skin Symptoms & Itching */}
+                  {itchingList.length > 0 && (
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Itching & Sensations:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {itchingList.map((sym: string) => (
+                          <span key={sym} className="px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-medium">
+                            {sym}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nature of Discharge */}
+                  {discharges.length > 0 && (
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Nature of Discharge:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {discharges.map((dis: string) => (
+                          <span key={dis} className="px-2 py-0.5 bg-amber-100 text-amber-800 rounded-md text-[10px] font-medium">
+                            {dis}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Triggers */}
+                  {triggersList.length > 0 && (
+                    <div>
+                      <span className="text-[10px] text-slate-500 block mb-1">Triggers & Aggravations:</span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {triggersList.map((trig: string) => (
+                          <span key={trig} className="px-2 py-0.5 bg-indigo-100 text-indigo-800 rounded-md text-[10px] font-medium">
+                            {trig}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Modalities from record */}
+                  {(record.modalitiesAggravation || record.modalitiesAmelioration) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                      {record.modalitiesAggravation && (
+                        <div className="p-2 bg-rose-50 border border-rose-100 rounded-lg text-rose-900 text-[11px]">
+                          <strong>Aggravation (&lt;):</strong> {record.modalitiesAggravation}
+                        </div>
+                      )}
+                      {record.modalitiesAmelioration && (
+                        <div className="p-2 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-900 text-[11px]">
+                          <strong>Amelioration (&gt;):</strong> {record.modalitiesAmelioration}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {(data.acneTreatment || data.cosmetics) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 border-t border-slate-200">
+                      {data.acneTreatment && (
+                        <div>
+                          <span className="text-[10px] text-slate-500 block font-medium">Previous Treatment:</span>
+                          <span className="text-[11px] text-slate-700">{data.acneTreatment}</span>
+                        </div>
+                      )}
+                      {data.cosmetics && (
+                        <div>
+                          <span className="text-[10px] text-slate-500 block font-medium">Cosmetics Used:</span>
+                          <span className="text-[11px] text-slate-700">{data.cosmetics}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
           {/* Clinical Acne Photo */}
           <div className="bg-slate-50/60 p-4 rounded-xl border border-slate-200/80 flex flex-col items-center justify-center text-center">
@@ -203,6 +267,9 @@ export const SkinHairSummaryCard: React.FC<SkinHairSummaryCardProps> = ({ record
           </div>
         </div>
       </div>
+          </>
+        );
+      })()}
 
       {/* 4 & 5. Hair Fall & Dandruff & Care History */}
       <div className="space-y-3">

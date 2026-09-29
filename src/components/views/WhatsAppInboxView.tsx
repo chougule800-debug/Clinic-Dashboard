@@ -31,6 +31,7 @@ export const WhatsAppInboxView: React.FC = () => {
     sendWhatsAppMessage,
     selectPatient,
     setActiveTab,
+    setActiveSystemFormKey,
     currentUser
   } = useClinic();
 
@@ -308,8 +309,12 @@ export const WhatsAppInboxView: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => {
-                              if (activeConv.patientId) {
-                                selectPatient(activeConv.patientId);
+                              const ptId = msg.linkData?.patientId || activeConv.patientId;
+                              if (ptId) {
+                                selectPatient(ptId);
+                              }
+                              if (msg.linkData?.system) {
+                                setActiveSystemFormKey(msg.linkData.system);
                               }
                               setActiveTab('case_summary');
                             }}

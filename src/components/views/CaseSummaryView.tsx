@@ -31,68 +31,74 @@ import {
 } from 'lucide-react';
 
 const WhatsAppRemoteSubmissionBadge: React.FC<{ record: any }> = ({ record }) => {
-  if (record.submittedVia !== 'WhatsApp_Remote_Intake') return null;
+  const isRemote =
+    record.submittedVia === 'WhatsApp_Remote_Intake' ||
+    record.clinicalNotes?.toLowerCase().includes('whatsapp') ||
+    record.clinicalNotes?.toLowerCase().includes('remotely');
+
+  if (!isRemote) return null;
 
   return (
-    <div className="bg-emerald-50 border-2 border-emerald-400/80 rounded-2xl p-4 shadow-xs space-y-3 mb-2">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-2.5">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
-            <MessageSquare className="w-4 h-4" />
+    <div className="bg-emerald-50/90 border-2 border-emerald-500 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3.5 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-200 pb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+            <MessageSquare className="w-5 h-5" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-emerald-950 text-sm">
-                Submitted Remotely via WhatsApp Patient Portal
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="font-bold text-emerald-950 text-sm sm:text-base">
+                📱 Submitted Remotely via WhatsApp Patient Portal
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 uppercase tracking-wider">
-                WhatsApp Form Active
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 uppercase tracking-wider">
+                Live WhatsApp Sync
               </span>
             </div>
-            <p className="text-[11px] text-emerald-700">
-              Submitted: {new Date(record.updatedAt).toLocaleDateString()} at {new Date(record.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • System: <strong className="capitalize">{String(record.system).replace('_', ' ')}</strong>
+            <p className="text-xs text-emerald-700 mt-0.5">
+              Received: <strong>{new Date(record.updatedAt).toLocaleDateString()}</strong> at <strong>{new Date(record.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong> • System: <strong className="capitalize">{String(record.system).replace('_', ' ')}</strong>
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 self-end sm:self-auto">
-          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
             record.severity === 'Severe' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
             record.severity === 'Moderate' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
             'bg-emerald-100 text-emerald-800 border border-emerald-200'
           }`}>
             {record.severity} Severity
           </span>
-          <span className="text-[11px] font-semibold text-emerald-900 bg-white px-2.5 py-0.5 rounded-lg border border-emerald-200">
-            Duration: {record.duration}
+          <span className="text-xs font-semibold text-emerald-900 bg-white px-3 py-1 rounded-xl border border-emerald-200 shadow-2xs">
+            Duration: {record.duration || 'Not specified'}
           </span>
         </div>
       </div>
 
       {/* Patient's Reported Details */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-        <div className="bg-white p-3 rounded-xl border border-emerald-200/80 space-y-1">
+        <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-1.5 shadow-2xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
-            Chief Complaints / मुख्य त्रास (Self-Reported)
+            Chief Complaints / मुख्य त्रास (Self-Reported by Patient)
           </span>
-          <p className="text-slate-900 font-medium leading-relaxed">
+          <p className="text-slate-900 font-semibold text-sm leading-relaxed">
             {record.chiefComplaints || 'Self-reported symptoms'}
           </p>
         </div>
 
-        <div className="bg-white p-3 rounded-xl border border-emerald-200/80 space-y-2">
+        <div className="bg-white p-3.5 rounded-xl border border-emerald-200 space-y-2 shadow-2xs">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 block">
-              Aggravations / त्रास वाढवणारे घटक (Worse From)
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700 block">
+              Aggravations / त्रास वाढवणारे घटक (&lt; Worse From)
             </span>
-            <p className="text-slate-800 text-[11px]">
+            <p className="text-slate-800 text-xs font-medium">
               {record.modalitiesAggravation || 'Not specified by patient'}
             </p>
           </div>
-          <div className="pt-1.5 border-t border-slate-100">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 block">
-              Ameliorations / आराम देणारे घटक (Relief From)
+          <div className="pt-2 border-t border-slate-100">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 block">
+              Ameliorations / आराम देणारे घटक (&gt; Relief From)
             </span>
-            <p className="text-slate-800 text-[11px]">
+            <p className="text-slate-800 text-xs font-medium">
               {record.modalitiesAmelioration || 'Not specified by patient'}
             </p>
           </div>
@@ -100,25 +106,25 @@ const WhatsAppRemoteSubmissionBadge: React.FC<{ record: any }> = ({ record }) =>
       </div>
 
       {record.concomitants && (
-        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200 text-xs">
+        <div className="bg-white p-3 rounded-xl border border-emerald-200 text-xs shadow-2xs">
           <strong className="text-emerald-900 text-[10px] uppercase block mb-0.5">Concomitant Symptoms / सोबतचे त्रास:</strong>
-          <span className="text-slate-800">{record.concomitants}</span>
+          <span className="text-slate-800 font-medium">{record.concomitants}</span>
         </div>
       )}
 
       {record.clinicalNotes && (
-        <div className="bg-white/90 p-2.5 rounded-xl border border-emerald-200 text-xs text-slate-700">
+        <div className="bg-white p-3 rounded-xl border border-emerald-200 text-xs text-slate-700 shadow-2xs">
           <strong className="text-emerald-900 text-[10px] uppercase block mb-0.5">Patient / Clinical Notes:</strong>
           <span>{record.clinicalNotes}</span>
         </div>
       )}
 
       {record.data && Object.keys(record.data).length > 0 && (
-        <div className="pt-1 space-y-1">
+        <div className="bg-white/80 p-3.5 rounded-xl border border-emerald-200 space-y-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 block">
             Questionnaire Answers Submitted by Patient:
           </span>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-2">
             {Object.entries(record.data).map(([key, val]) => {
               if (!val || (Array.isArray(val) && val.length === 0)) return null;
               if (key === 'systemLabel' || key === 'uploadedPhotosCount') return null;
@@ -126,9 +132,9 @@ const WhatsAppRemoteSubmissionBadge: React.FC<{ record: any }> = ({ record }) =>
               return (
                 <span
                   key={key}
-                  className="px-2.5 py-1 bg-white border border-emerald-300 text-emerald-950 rounded-lg text-[11px] font-medium shadow-2xs"
+                  className="px-3 py-1.5 bg-white border border-emerald-300 text-emerald-950 rounded-lg text-xs font-medium shadow-2xs"
                 >
-                  <strong className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</strong> {displayVal}
+                  <strong className="capitalize text-emerald-800">{key.replace(/([A-Z])/g, ' $1')}:</strong> {displayVal}
                 </span>
               );
             })}
@@ -141,15 +147,25 @@ const WhatsAppRemoteSubmissionBadge: React.FC<{ record: any }> = ({ record }) =>
 
 export const CaseSummaryView: React.FC = () => {
   const {
+    patients,
     selectedPatient,
+    selectPatient,
     systemForms,
     setActiveTab,
     openWhatsAppShareDialog,
-    activeSystemFormKey
+    activeSystemFormKey,
+    setActiveSystemFormKey
   } = useClinic();
 
   const [showFhirJson, setShowFhirJson] = useState(false);
   const [copiedFhir, setCopiedFhir] = useState(false);
+
+  // All remote submissions across all patients
+  const allRemoteForms = systemForms.filter(
+    f => f.submittedVia === 'WhatsApp_Remote_Intake' || f.clinicalNotes?.toLowerCase().includes('whatsapp')
+  );
+  const latestRemoteForm = allRemoteForms[0];
+  const latestRemotePatient = latestRemoteForm ? patients.find(p => p.id === latestRemoteForm.patientId) : undefined;
 
   if (!selectedPatient) {
     return (
@@ -220,18 +236,53 @@ export const CaseSummaryView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Top Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-4 pb-12">
+      {/* 📱 Real-Time WhatsApp Notification Banner if another patient submitted a form */}
+      {latestRemoteForm && latestRemoteForm.patientId !== selectedPatient.id && (
+        <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-slate-900 text-white rounded-2xl p-4 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-emerald-500/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0 text-white">
+              <MessageSquare className="w-5 h-5 text-emerald-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-sm text-white">
+                  📱 New WhatsApp Case Form Received!
+                </span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400 text-emerald-950 uppercase tracking-wider">
+                  Ready to Review
+                </span>
+              </div>
+              <p className="text-xs text-emerald-100 mt-0.5">
+                <strong>{latestRemotePatient?.name || latestRemoteForm.patientId}</strong> submitted <strong>{latestRemoteForm.system.replace('_', ' ').toUpperCase()}</strong> questionnaire ({new Date(latestRemoteForm.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}).
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              selectPatient(latestRemoteForm.patientId);
+              setActiveSystemFormKey(latestRemoteForm.system);
+            }}
+            className="px-4 py-2 bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold text-xs rounded-xl shadow-xs transition-colors flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <span>Switch to {latestRemotePatient?.name?.split(' ')[0] || 'Patient'}'s Summary ➔</span>
+          </button>
+        </div>
+      )}
+
+      {/* Top Bar with Patient Switcher */}
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 text-teal-800 border border-teal-200 flex items-center gap-1">
               <FileCheck2 className="w-3 h-3 text-teal-600" />
               Consolidated Case Record
             </span>
             <span className="text-slate-400">•</span>
             <span className="text-xs text-slate-600">
-              Patient ID: <strong>{selectedPatient.id}</strong>
+              Active Patient: <strong>{selectedPatient.name}</strong> ({selectedPatient.id})
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 font-serif flex items-center gap-2">
@@ -239,33 +290,55 @@ export const CaseSummaryView: React.FC = () => {
             Consolidated Case Summary
           </h2>
           <p className="text-xs text-slate-500">
-            Synthesized clinical profile from all recorded system forms, baseline vitals, and remote intake questionnaires.
+            Synthesized clinical profile from all recorded system forms, baseline vitals, and remote WhatsApp questionnaires.
           </p>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Controls & Direct Patient Switcher */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Direct Patient Switcher Dropdown */}
+          <div className="flex items-center gap-1.5 bg-slate-50 border border-teal-300 rounded-xl px-2.5 py-1.5 shadow-2xs">
+            <User className="w-3.5 h-3.5 text-teal-700" />
+            <span className="text-[11px] font-semibold text-slate-500">Patient:</span>
+            <select
+              value={selectedPatient.id}
+              onChange={(e) => selectPatient(e.target.value)}
+              className="bg-transparent text-xs font-bold text-slate-900 focus:outline-none cursor-pointer"
+            >
+              {patients.map(p => {
+                const hasWa = systemForms.some(
+                  f => f.patientId === p.id && (f.submittedVia === 'WhatsApp_Remote_Intake' || f.clinicalNotes?.toLowerCase().includes('whatsapp'))
+                );
+                return (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.id}) {hasWa ? '• 📱 WhatsApp Intake Active' : ''}
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+
           <button
             id="btn-summary-to-repertory"
             onClick={() => setActiveTab('repertorisation')}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <GitBranch className="w-4 h-4" />
-            <span>Proceed to Repertorisation</span>
+            <span>Repertorise</span>
           </button>
 
           <button
             id="btn-summary-to-prescription"
             onClick={() => setActiveTab('prescription')}
-            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-xl transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
           >
             <Pill className="w-4 h-4" />
-            <span>Generate Prescription</span>
+            <span>Prescribe</span>
           </button>
 
           <button
             onClick={() => window.print()}
-            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors"
+            className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors cursor-pointer"
             title="Print Case Summary"
           >
             <Printer className="w-4 h-4" />
@@ -374,16 +447,68 @@ export const CaseSummaryView: React.FC = () => {
           </div>
 
           {patientForms.length === 0 ? (
-            <div className="p-6 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
-              <p className="text-slate-500 text-xs">
-                No system-wise forms recorded yet for {selectedPatient.name}.
-              </p>
-              <button
-                onClick={() => setActiveTab('case_taking')}
-                className="mt-2 px-3.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-xs font-semibold"
-              >
-                Start System-Wise Case Taking
-              </button>
+            <div className="p-8 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 space-y-4">
+              <div className="w-12 h-12 rounded-full bg-slate-200/80 text-slate-500 flex items-center justify-center mx-auto">
+                <FileCheck2 className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-slate-700 font-semibold text-sm">
+                  No system-wise forms recorded yet for {selectedPatient.name} ({selectedPatient.id}).
+                </p>
+                <p className="text-slate-400 text-xs mt-1">
+                  Start an in-clinic case form below or switch to a patient with an active WhatsApp submission.
+                </p>
+              </div>
+
+              {allRemoteForms.length > 0 && (
+                <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl text-left max-w-lg mx-auto space-y-2">
+                  <div className="flex items-center gap-1.5 text-emerald-900 font-bold text-xs">
+                    <MessageSquare className="w-4 h-4 text-emerald-600" />
+                    <span>WhatsApp Form Submissions Available on Other Patients:</span>
+                  </div>
+                  <div className="space-y-1.5">
+                    {allRemoteForms.slice(0, 3).map(rf => {
+                      const pt = patients.find(p => p.id === rf.patientId);
+                      return (
+                        <div key={rf.id} className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-lg border border-emerald-100 text-xs">
+                          <div>
+                            <strong className="text-slate-900">{pt?.name || rf.patientId}</strong>
+                            <span className="text-slate-500 text-[11px] ml-1.5">({rf.system.replace('_', ' ')})</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              selectPatient(rf.patientId);
+                              setActiveSystemFormKey(rf.system);
+                            }}
+                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs rounded-lg transition-colors cursor-pointer shadow-2xs"
+                          >
+                            View Case ➔
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center justify-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('case_taking')}
+                  className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors"
+                >
+                  Start In-Clinic Case Taking
+                </button>
+                <button
+                  type="button"
+                  onClick={() => openWhatsAppShareDialog(selectedPatient.id, activeSystemFormKey || 'headache')}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-xs transition-colors flex items-center gap-1.5"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>Send WhatsApp Form Link</span>
+                </button>
+              </div>
             </div>
           ) : (
             <div className="space-y-4">

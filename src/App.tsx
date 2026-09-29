@@ -92,6 +92,7 @@ const checkPatientPortalFromUrl = (): PatientPortalState => {
 const MainLayout: React.FC = () => {
   const {
     activeTab,
+    setActiveTab,
     selectPatient,
     setActiveSystemFormKey,
     currentUser
@@ -119,6 +120,24 @@ const MainLayout: React.FC = () => {
     }
   }, [portalState.patientId, portalState.system]);
 
+  // Support direct case summary deep links: ?view=case_summary&patient=PT-1002&system=skin_hair
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const view = params.get('view') || params.get('tab');
+      const pt = params.get('patient') || params.get('pt');
+      const sys = params.get('system') as ClinicalSystemKey | null;
+
+      if (view === 'case_summary') {
+        setActiveTab('case_summary');
+        if (pt) selectPatient(pt);
+        if (sys) setActiveSystemFormKey(sys);
+      }
+    } catch (e) {
+      console.warn('URL navigation handler notice:', e);
+    }
+  }, []);
+
   // If patient portal mode is active, ONLY render the standalone form / rx / bill
   // STRICT ISOLATION: The doctor dashboard, sidebar, header, and patient lists are completely hidden!
   if (portalState.isPatientPortal) {
@@ -129,7 +148,7 @@ const MainLayout: React.FC = () => {
         system={portalState.system}
         rxId={portalState.rxId}
         invId={portalState.invId}
-        onExitToDashboard={() => {
+        onExitToDashboard={(targetTab?: string, ptId?: string, sys?: ClinicalSystemKey) => {
           window.history.replaceState({}, '', window.location.pathname);
           setPortalState({
             isPatientPortal: false,
@@ -139,6 +158,15 @@ const MainLayout: React.FC = () => {
             rxId: null,
             invId: null
           });
+          if (targetTab) {
+            setActiveTab(targetTab);
+          }
+          if (ptId) {
+            selectPatient(ptId);
+          }
+          if (sys) {
+            setActiveSystemFormKey(sys);
+          }
         }}
       />
     );

@@ -34,7 +34,9 @@ import {
   syncInvoiceToFirestore,
   fetchPatientsFromFirestore,
   fetchSystemFormsFromFirestore,
-  pushAllToFirestore
+  pushAllToFirestore,
+  subscribeToSystemForms,
+  subscribeToPatients
 } from '../lib/firestoreService';
 
 interface ClinicContextType {
@@ -319,15 +321,65 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         console.warn('Initial Firestore fetch fallback to local:', err);
       }
     })();
+
+    // 2. Attach live Firestore real-time onSnapshot listeners
+    const unsubForms = subscribeToSystemForms((liveForms) => {
+      if (!isMounted || !liveForms || liveForms.length === 0) return;
+      setSystemForms(prev => {
+        const merged = [...prev];
+        let hasChanges = false;
+        for (const lf of liveForms) {
+          const idx = merged.findIndex(
+            f => f.id === lf.id || (f.patientId === lf.patientId && f.system === lf.system)
+          );
+          if (idx >= 0) {
+            if (!merged[idx].updatedAt || new Date(lf.updatedAt) >= new Date(merged[idx].updatedAt)) {
+              merged[idx] = lf;
+              hasChanges = true;
+            }
+          } else {
+            merged.unshift(lf);
+            hasChanges = true;
+          }
+        }
+        return hasChanges ? merged : prev;
+      });
+      setFirestoreStatus(prev => ({
+        ...prev,
+        lastSyncedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }));
+    });
+
+    const unsubPatients = subscribeToPatients((livePatients) => {
+      if (!isMounted || !livePatients || livePatients.length === 0) return;
+      setPatients(prev => {
+        const merged = [...prev];
+        let hasChanges = false;
+        for (const lp of livePatients) {
+          const idx = merged.findIndex(p => p.id === lp.id);
+          if (idx >= 0) {
+            merged[idx] = lp;
+            hasChanges = true;
+          } else {
+            merged.unshift(lp);
+            hasChanges = true;
+          }
+        }
+        return hasChanges ? merged : prev;
+      });
+    });
+
     return () => {
       isMounted = false;
+      unsubForms();
+      unsubPatients();
     };
   }, []);
 
   // Listen for real-time / cross-window / tab case form submissions
   useEffect(() => {
     const handleCaseSubmitted = (e: any) => {
-      const { patientId, record } = e.detail || {};
+      const { patientId, record, system } = e.detail || {};
       if (record) {
         setSystemForms(prev => {
           const idx = prev.findIndex(f => f.id === record.id || (f.patientId === record.patientId && f.system === record.system));
@@ -342,11 +394,72 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       if (patientId) {
         setSelectedPatientId(patientId);
       }
+      if (system) {
+        setActiveSystemFormKey(system);
+      }
+    };
+
+    // Cross-tab storage listener (e.g. when patient portal submitted in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (!e.key) return;
+
+      if (e.key === 'ayush_remote_intake_event' && e.newValue) {
+        try {
+          const payload = JSON.parse(e.newValue);
+          if (payload?.record) {
+            setSystemForms(prev => {
+              const idx = prev.findIndex(
+                f => f.id === payload.record.id || (f.patientId === payload.record.patientId && f.system === payload.record.system)
+              );
+              if (idx >= 0) {
+                const next = [...prev];
+                next[idx] = payload.record;
+                return next;
+              }
+              return [payload.record, ...prev];
+            });
+            if (payload.patientId) {
+              setSelectedPatientId(payload.patientId);
+            }
+            if (payload.system) {
+              setActiveSystemFormKey(payload.system);
+            }
+          }
+        } catch (err) {
+          console.warn('Cross-tab intake event parse error:', err);
+        }
+      }
+
+      if (e.key.includes('system_forms') && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setSystemForms(prev => {
+              const merged = [...prev];
+              for (const item of parsed) {
+                const idx = merged.findIndex(f => f.id === item.id || (f.patientId === item.patientId && f.system === item.system));
+                if (idx >= 0) merged[idx] = item;
+                else merged.unshift(item);
+              }
+              return merged;
+            });
+          }
+        } catch {}
+      }
+
+      if (e.key.includes('conversations') && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) setConversations(parsed);
+        } catch {}
+      }
     };
 
     window.addEventListener('ayush_case_form_submitted', handleCaseSubmitted as any);
+    window.addEventListener('storage', handleStorageChange);
     return () => {
       window.removeEventListener('ayush_case_form_submitted', handleCaseSubmitted as any);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -901,6 +1014,33 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const submitRemoteIntake = (patientId: string, system: ClinicalSystemKey, payload: any) => {
+    // 0. Ensure patient exists in state & cloud
+    const patientExists = patients.some(p => p.id === patientId);
+    let resolvedPatientName = payload.patientName || '';
+    if (!patientExists) {
+      const fallbackPatient: Patient = {
+        id: patientId,
+        abhaId: `91-0000-${Math.floor(1000 + Math.random() * 9000)}-${Math.floor(1000 + Math.random() * 9000)}`,
+        name: payload.patientName || `Patient ${patientId}`,
+        age: payload.patientAge ? Number(payload.patientAge) : 35,
+        gender: payload.patientGender || 'Other',
+        mobile: payload.mobile || '',
+        address: 'Registered via WhatsApp Remote Intake',
+        bloodGroup: 'O+',
+        vitals: { bpSystolic: 120, bpDiastolic: 80, pulse: 76, temperature: 98.4, spo2: 99, weight: 65, height: 65, heightInch: 65, bmi: 23.9, rbs: 100 },
+        allergies: [],
+        chronicDiseases: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      resolvedPatientName = fallbackPatient.name;
+      setPatients(prev => [fallbackPatient, ...prev]);
+      syncPatientToFirestore(fallbackPatient).catch(err => console.warn('Firestore fallback patient sync:', err));
+    } else {
+      const existingPt = patients.find(p => p.id === patientId);
+      if (existingPt) resolvedPatientName = existingPt.name;
+    }
+
     // 1. Save as remote submitted form in state & cloud
     const savedRecord = saveSystemForm({
       patientId,
@@ -920,7 +1060,7 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setSelectedPatientId(patientId);
     setActiveSystemFormKey(system);
 
-    // 3. Immediately store across doctor localStorage keys
+    // 3. Immediately store across doctor localStorage keys & broadcast for cross-tab sync
     try {
       const activeKeys = [`ayush_doc_bharat_system_forms`, `${LOCAL_STORAGE_KEY}_system_forms`];
       if (currentUser?.id) {
@@ -938,6 +1078,15 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         localStorage.setItem(k, JSON.stringify(list));
       }
 
+      // Cross-tab broadcast trigger
+      localStorage.setItem('ayush_remote_intake_event', JSON.stringify({
+        patientId,
+        patientName: resolvedPatientName,
+        system,
+        record: savedRecord,
+        timestamp: Date.now()
+      }));
+
       window.dispatchEvent(
         new CustomEvent('ayush_case_form_submitted', {
           detail: { patientId, system, record: savedRecord }
@@ -948,24 +1097,26 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
 
     // 4. Post update into WhatsApp inbox for this patient with quick action to Case Summary!
-    const targetConv = conversations.find(c => c.patientId === patientId);
-    if (targetConv) {
-      const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const patientMsg: WhatsAppMessage = {
-        id: `msg-resp-${Date.now()}`,
-        sender: 'patient',
-        text: `✅ Doctor, I have completed and submitted my ${system.replace('_', ' ').toUpperCase()} case form! All symptoms & modalities are stored for your Case Summary review.`,
-        timestamp: nowStr,
-        linkData: {
-          type: 'case_intake',
-          title: `View ${system.replace('_', ' ').toUpperCase()} Case Summary`,
-          url: `/?view=case_summary&patient=${patientId}&system=${system}`
-        }
-      };
+    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const patientMsg: WhatsAppMessage = {
+      id: `msg-resp-${Date.now()}`,
+      sender: 'patient',
+      text: `✅ Doctor, I have completed and submitted my ${system.replace('_', ' ').toUpperCase()} case form! All symptoms & modalities are stored for your Case Summary review.`,
+      timestamp: nowStr,
+      linkData: {
+        type: 'case_intake',
+        system,
+        patientId,
+        title: `View ${system.replace('_', ' ').toUpperCase()} Case Summary`,
+        url: `/?view=case_summary&patient=${patientId}&system=${system}`
+      }
+    };
 
-      setConversations(prev =>
-        prev.map(c => {
-          if (c.id === targetConv.id) {
+    setConversations(prev => {
+      const existIdx = prev.findIndex(c => c.patientId === patientId);
+      if (existIdx >= 0) {
+        return prev.map((c, i) => {
+          if (i === existIdx) {
             return {
               ...c,
               lastMessage: patientMsg.text,
@@ -976,9 +1127,23 @@ export const ClinicProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             };
           }
           return c;
-        })
-      );
-    }
+        });
+      } else {
+        const newConv: WhatsAppConversation = {
+          id: `CONV-REMOTE-${Date.now()}`,
+          patientId,
+          patientName: resolvedPatientName || `Patient ${patientId}`,
+          phone: payload.mobile || '',
+          category: 'Patients',
+          unreadCount: 1,
+          lastMessage: patientMsg.text,
+          lastMessageTime: nowStr,
+          status: 'In-Progress',
+          messages: [patientMsg]
+        };
+        return [newConv, ...prev];
+      }
+    });
   };
 
   const sendWhatsAppMessage = (

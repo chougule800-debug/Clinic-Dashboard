@@ -34,7 +34,7 @@ interface PatientPortalViewProps {
   system?: ClinicalSystemKey | null;
   rxId?: string | null;
   invId?: string | null;
-  onExitToDashboard?: () => void;
+  onExitToDashboard?: (targetTab?: string, ptId?: string, sys?: ClinicalSystemKey) => void;
 }
 
 export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
@@ -180,9 +180,9 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
     setSubmittedSuccess(true);
   };
 
-  const handleExit = () => {
+  const handleExit = (targetTab?: string, ptId?: string, sys?: ClinicalSystemKey) => {
     if (onExitToDashboard) {
-      onExitToDashboard();
+      onExitToDashboard(targetTab, ptId, sys);
     } else {
       window.location.href = window.location.pathname;
     }
@@ -224,7 +224,7 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
             </a>
             {/* Discreet switch to doctor dashboard if doctor is viewing */}
             <button
-              onClick={handleExit}
+              onClick={() => handleExit()}
               title="Return to Doctor / Staff Dashboard"
               className="px-2 py-1.5 rounded-lg text-emerald-300 hover:text-white hover:bg-emerald-800 text-[11px] transition-colors flex items-center gap-1 opacity-70 hover:opacity-100"
             >
@@ -303,7 +303,7 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
                           selectPatient(targetPatient.id);
                         }
                         setActiveTab('case_summary');
-                        handleExit();
+                        handleExit('case_summary', targetPatient?.id, effectiveSystem);
                       }}
                       className="px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-xs"
                     >
@@ -970,7 +970,7 @@ export const PatientPortalView: React.FC<PatientPortalViewProps> = ({
         <div className="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>{CLINIC_CONFIG.appName} • {CLINIC_CONFIG.doctorName} ({CLINIC_CONFIG.qualifications})</span>
           <button
-            onClick={handleExit}
+            onClick={() => handleExit()}
             className="text-slate-400 hover:text-emerald-800 text-[11px] transition-colors"
           >
             Doctor / Staff Dashboard Login →
