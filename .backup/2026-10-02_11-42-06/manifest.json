@@ -1,0 +1,67 @@
+{
+  "id": "2026-10-02_11-42-06",
+  "timestamp": "2026-10-02 11:42:06",
+  "type": "apply",
+  "files": [
+    {
+      "path": ".env.example",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "package.json",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/supabase.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/database.types.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/base.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/patients.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/prescriptions.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/appointments.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/followUps.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/invoices.ts",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    }
+  ]
+}

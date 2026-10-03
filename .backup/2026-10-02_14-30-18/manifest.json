@@ -1,0 +1,61 @@
+{
+  "id": "2026-10-02_14-30-18",
+  "timestamp": "2026-10-02 14:30:18",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/views/SkinHairSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/NeuroSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/GastroSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/UrinarySummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/MusculoskeletalSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/RespiratorySummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/FemaleGynaeSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/PediatricSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/MindGeneralsSummaryCard.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "id": "2026-10-02_11-46-39",
+  "timestamp": "2026-10-02 11:46:39",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/patient-portal/PublicShareView.tsx",
+      "status": "new",
+      "old_exists": false,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/PatientBanner.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/PatientRegistrationModal.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/WhatsAppShareModal.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/RemoteIntakeModal.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/FirebaseStatusModal.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/views/DoctorProfileView.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

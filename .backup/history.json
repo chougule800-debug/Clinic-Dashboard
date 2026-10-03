@@ -1,0 +1,846 @@
+[
+  {
+    "id": "2026-10-02_15-56-20",
+    "timestamp": "2026-10-02 15:56:20",
+    "type": "apply",
+    "count": 7,
+    "files": [
+      {
+        "path": "src/components/forms/NeuroCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/GastroCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/UrinaryCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/MusculoskeletalCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/RespiratoryCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/FemaleGynaeCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/PediatricCaseForm.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_15-50-17",
+    "timestamp": "2026-10-02 15:50:17",
+    "type": "apply",
+    "count": 2,
+    "files": [
+      {
+        "path": "src/components/patient-portal/PublicShareView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/RemoteIntakeModal.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_15-47-16",
+    "timestamp": "2026-10-02 15:47:16",
+    "type": "apply",
+    "count": 5,
+    "files": [
+      {
+        "path": "src/lib/utils.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/components/Sidebar.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/App.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/server.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/CaseTakingView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_15-45-50",
+    "timestamp": "2026-10-02 15:45:50",
+    "type": "apply",
+    "count": 6,
+    "files": [
+      {
+        "path": "src/types.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormResponseView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormResponsesList.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormsBuilder.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/RepertorisationView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/CaseSummaryView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-34-05",
+    "timestamp": "2026-10-02 14:34:05",
+    "type": "apply",
+    "count": 1,
+    "files": [
+      {
+        "path": "src/components/custom-forms/CustomFormFillView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-31-34",
+    "timestamp": "2026-10-02 14:31:34",
+    "type": "apply",
+    "count": 1,
+    "files": [
+      {
+        "path": "src/components/patient-portal/PublicShareView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-30-18",
+    "timestamp": "2026-10-02 14:30:18",
+    "type": "apply",
+    "count": 9,
+    "files": [
+      {
+        "path": "src/components/views/SkinHairSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/NeuroSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/GastroSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/UrinarySummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/MusculoskeletalSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/RespiratorySummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/FemaleGynaeSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/PediatricSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/MindGeneralsSummaryCard.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-27-27",
+    "timestamp": "2026-10-02 14:27:27",
+    "type": "apply",
+    "count": 8,
+    "files": [
+      {
+        "path": "src/components/WhatsAppShareModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/RemoteIntakeModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/Header.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/Sidebar.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/App.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/FollowUpView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/PrescriptionView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/BillingView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-25-39",
+    "timestamp": "2026-10-02 14:25:39",
+    "type": "apply",
+    "count": 3,
+    "files": [
+      {
+        "path": "src/components/custom-forms/CustomFormResponseView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormResponsesList.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/systemForms.ts",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_14-22-24",
+    "timestamp": "2026-10-02 14:22:24",
+    "type": "apply",
+    "count": 9,
+    "files": [
+      {
+        "path": "src/components/PatientBanner.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormsBuilder.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/patient-portal/PublicShareView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/CaseSummaryView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/CaseTakingView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/DashboardView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/PatientsView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/WhatsAppInboxView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/context/ClinicContext.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-54-53",
+    "timestamp": "2026-10-02 13:54:53",
+    "type": "apply",
+    "count": 1,
+    "files": [
+      {
+        "path": "schema.sql",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-34-17",
+    "timestamp": "2026-10-02 13:34:17",
+    "type": "apply",
+    "count": 1,
+    "files": [
+      {
+        "path": "schema.sql",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-15-22",
+    "timestamp": "2026-10-02 13:15:22",
+    "type": "apply",
+    "count": 1,
+    "files": [
+      {
+        "path": "metadata.json",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-13-33",
+    "timestamp": "2026-10-02 13:13:33",
+    "type": "apply",
+    "count": 11,
+    "files": [
+      {
+        "path": "src/config/doctorsConfig.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/base.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/supabase.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/patients.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/systemForms.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/prescriptions.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/customForms.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/customResponses.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/fileAttachments.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/whatsapp.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/services/profiles.ts",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-07-55",
+    "timestamp": "2026-10-02 13:07:55",
+    "type": "apply",
+    "count": 8,
+    "files": [
+      {
+        "path": "src/App.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/index.css",
+        "status": "modified"
+      },
+      {
+        "path": "index.html",
+        "status": "modified"
+      },
+      {
+        "path": "vite.config.ts",
+        "status": "modified"
+      },
+      {
+        "path": "tsconfig.json",
+        "status": "modified"
+      },
+      {
+        "path": "server.ts",
+        "status": "modified"
+      },
+      {
+        "path": "package.json",
+        "status": "modified"
+      },
+      {
+        "path": ".env.example",
+        "status": "new"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_13-02-23",
+    "timestamp": "2026-10-02 13:02:23",
+    "type": "apply",
+    "count": 8,
+    "files": [
+      {
+        "path": "src/components/patient-portal/PublicShareView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/Header.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/SupabaseStatusModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/Sidebar.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/context/ClinicContext.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/RemoteIntakeModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/WhatsAppShareModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/PatientRegistrationModal.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_12-51-44",
+    "timestamp": "2026-10-02 12:51:44",
+    "type": "apply",
+    "count": 8,
+    "files": [
+      {
+        "path": "src/components/forms/NeuroCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/GastroCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/UrinaryCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/MusculoskeletalCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/RespiratoryCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/FemaleGynaeCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/PediatricCaseForm.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/MindGeneralsCaseForm.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-54-12",
+    "timestamp": "2026-10-02 11:54:12",
+    "type": "apply",
+    "count": 5,
+    "files": [
+      {
+        "path": "src/components/views/DoctorProfileView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/FemaleGynaeSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/PediatricSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/MindGeneralsSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/forms/SkinHairCaseForm.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-52-24",
+    "timestamp": "2026-10-02 11:52:24",
+    "type": "apply",
+    "count": 10,
+    "files": [
+      {
+        "path": "src/components/views/PrescriptionView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/FollowUpView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/WhatsAppInboxView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/RepertorisationView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/SkinHairSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/NeuroSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/GastroSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/UrinarySummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/MusculoskeletalSummaryCard.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/RespiratorySummaryCard.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-50-12",
+    "timestamp": "2026-10-02 11:50:12",
+    "type": "apply",
+    "count": 10,
+    "files": [
+      {
+        "path": "src/components/custom-forms/CustomFormsBuilder.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormFillView.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormResponseView.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/custom-forms/CustomFormResponsesList.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/views/CaseTakingView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/PatientsView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/AppointmentsView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/DashboardView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/ReportsView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/BillingView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-47-56",
+    "timestamp": "2026-10-02 11:47:56",
+    "type": "apply",
+    "count": 9,
+    "files": [
+      {
+        "path": "src/lib/firebase.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/firestoreService.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/patient-portal/PatientPortalView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/main.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/index.css",
+        "status": "modified"
+      },
+      {
+        "path": "src/server.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/utils/patientVoiceParser.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/data/repertoryDatabase.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/CaseSummaryView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-46-39",
+    "timestamp": "2026-10-02 11:46:39",
+    "type": "apply",
+    "count": 7,
+    "files": [
+      {
+        "path": "src/components/patient-portal/PublicShareView.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/PatientBanner.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/PatientRegistrationModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/WhatsAppShareModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/RemoteIntakeModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/FirebaseStatusModal.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/views/DoctorProfileView.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-45-19",
+    "timestamp": "2026-10-02 11:45:19",
+    "type": "apply",
+    "count": 11,
+    "files": [
+      {
+        "path": "src/types.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/config/clinicConfig.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/config/doctorsConfig.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/data/mockData.ts",
+        "status": "modified"
+      },
+      {
+        "path": "src/vite-env.d.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/context/ClinicContext.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/App.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/auth/LoginView.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/Header.tsx",
+        "status": "modified"
+      },
+      {
+        "path": "src/components/SupabaseStatusModal.tsx",
+        "status": "new"
+      },
+      {
+        "path": "src/components/Sidebar.tsx",
+        "status": "modified"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-43-03",
+    "timestamp": "2026-10-02 11:43:03",
+    "type": "apply",
+    "count": 10,
+    "files": [
+      {
+        "path": "src/lib/services/systemForms.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/shareTokens.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/customForms.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/customResponses.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/fileAttachments.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/whatsapp.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/repertory.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/profiles.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/clinicSettings.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/clinicalSystems.ts",
+        "status": "new"
+      }
+    ]
+  },
+  {
+    "id": "2026-10-02_11-42-06",
+    "timestamp": "2026-10-02 11:42:06",
+    "type": "apply",
+    "count": 10,
+    "files": [
+      {
+        "path": ".env.example",
+        "status": "modified"
+      },
+      {
+        "path": "package.json",
+        "status": "modified"
+      },
+      {
+        "path": "src/lib/supabase.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/database.types.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/base.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/patients.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/prescriptions.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/appointments.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/followUps.ts",
+        "status": "new"
+      },
+      {
+        "path": "src/lib/services/invoices.ts",
+        "status": "new"
+      }
+    ]
+  }
+]

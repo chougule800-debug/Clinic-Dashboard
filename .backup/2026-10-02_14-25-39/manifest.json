@@ -1,0 +1,25 @@
+{
+  "id": "2026-10-02_14-25-39",
+  "timestamp": "2026-10-02 14:25:39",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/custom-forms/CustomFormResponseView.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/custom-forms/CustomFormResponsesList.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/lib/services/systemForms.ts",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

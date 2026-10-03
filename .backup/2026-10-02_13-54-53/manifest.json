@@ -1,0 +1,13 @@
+{
+  "id": "2026-10-02_13-54-53",
+  "timestamp": "2026-10-02 13:54:53",
+  "type": "apply",
+  "files": [
+    {
+      "path": "schema.sql",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

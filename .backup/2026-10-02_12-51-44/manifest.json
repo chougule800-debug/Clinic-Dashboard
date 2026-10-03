@@ -1,0 +1,55 @@
+{
+  "id": "2026-10-02_12-51-44",
+  "timestamp": "2026-10-02 12:51:44",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/forms/NeuroCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/GastroCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/UrinaryCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/MusculoskeletalCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/RespiratoryCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/FemaleGynaeCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/PediatricCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/forms/MindGeneralsCaseForm.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

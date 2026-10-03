@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@media print {
+  /* Hide application chrome and navigation during print */
+  header,
+  aside,
+  nav,
+  .no-print,
+  #patient-banner,
+  button {
+    display: none !important;
+  }
+
+  body,
+  html,
+  #root,
+  main {
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  #prescription-paper {
+    border: none !important;
+    box-shadow: none !important;
+    max-width: 100% !important;
+    padding: 0.25in 0.5in !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+  }
+}

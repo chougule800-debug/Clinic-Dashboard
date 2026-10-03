@@ -1,0 +1,13 @@
+{
+  "id": "2026-10-02_14-31-34",
+  "timestamp": "2026-10-02 14:31:34",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/patient-portal/PublicShareView.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

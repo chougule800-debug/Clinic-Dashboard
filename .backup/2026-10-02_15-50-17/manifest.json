@@ -1,0 +1,19 @@
+{
+  "id": "2026-10-02_15-50-17",
+  "timestamp": "2026-10-02 15:50:17",
+  "type": "apply",
+  "files": [
+    {
+      "path": "src/components/patient-portal/PublicShareView.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    },
+    {
+      "path": "src/components/RemoteIntakeModal.tsx",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}

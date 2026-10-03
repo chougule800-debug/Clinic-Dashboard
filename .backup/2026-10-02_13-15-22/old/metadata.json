@@ -1,0 +1,6 @@
+{
+  "name": "Dr. Bharat's Aroga Homeopathy",
+  "description": "Dr. Bharat's Aroga Homeopathy - Comprehensive Clinic Management & Case Taking by Dr. Bharat Chougule (BHMS, PGDCP, Reg. No. A-11124), 1st Floor Mahalaxmi plaza, Vengulra Road, Opp Central Jail Hindalga, Belgaum 591108. Powered by Firestore.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

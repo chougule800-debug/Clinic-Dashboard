@@ -1,0 +1,13 @@
+{
+  "id": "2026-10-02_13-15-22",
+  "timestamp": "2026-10-02 13:15:22",
+  "type": "apply",
+  "files": [
+    {
+      "path": "metadata.json",
+      "status": "modified",
+      "old_exists": true,
+      "new_exists": true
+    }
+  ]
+}
